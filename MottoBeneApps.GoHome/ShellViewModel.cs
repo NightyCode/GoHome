@@ -139,7 +139,9 @@
                 System.Windows.MessageBoxResult result = MessageBox.Show(
                     "Are you sure you want to exit?",
                     "Confirm",
-                    MessageBoxButton.YesNo);
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning,
+                    System.Windows.MessageBoxResult.No);
 
                 Completed(
                     this,
