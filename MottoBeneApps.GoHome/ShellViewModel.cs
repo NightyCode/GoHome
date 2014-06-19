@@ -9,8 +9,6 @@
     using System.IO;
     using System.Reflection;
     using System.Windows;
-    using System.Windows.Controls;
-    using System.Windows.Media;
 
     using Caliburn.Micro;
 
@@ -74,13 +72,10 @@
             _window.StateChanged += OnWindowStateChanged;
             _previousWindowState = _window.WindowState;
 
-            Stream iconStream = IoC.Get<IResourceManager>().GetStream("Resources/GoHome.ico", Assembly.GetExecutingAssembly().GetAssemblyName());
+            Stream iconStream = IoC.Get<IResourceManager>()
+                .GetStream("Resources/GoHome.ico", Assembly.GetExecutingAssembly().GetAssemblyName());
 
-            _taskbarIcon = new TaskbarIcon
-            {
-                Icon = new Icon(iconStream),
-                Visibility = Visibility.Hidden
-            };
+            _taskbarIcon = new TaskbarIcon { Icon = new Icon(iconStream), Visibility = Visibility.Hidden };
 
             _taskbarIcon.TrayMouseDoubleClick += OnTaskbarIconTrayMouseDoubleClick;
         }
