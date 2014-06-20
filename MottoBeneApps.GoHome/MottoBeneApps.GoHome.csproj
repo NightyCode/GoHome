@@ -147,6 +147,10 @@
     <DesignData Include="SampleData\UserActivityViewModelSampleData.xaml" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MottoBeneApps.GoHome.DataModels.SQLite\MottoBeneApps.GoHome.DataModels.SQLite.csproj">
+      <Project>{71984f56-6e20-41f5-b101-17d2447ba924}</Project>
+      <Name>MottoBeneApps.GoHome.DataModels.SQLite</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MottoBeneApps.GoHome.DataModels\MottoBeneApps.GoHome.DataModels.csproj">
       <Project>{EF6B8330-C5F4-4FEC-ABC9-8E7095286745}</Project>
       <Name>MottoBeneApps.GoHome.DataModels</Name>

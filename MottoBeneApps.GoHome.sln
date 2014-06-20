@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MottoBeneApps.GoHome", "Mot
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MottoBeneApps.GoHome.DataModels", "MottoBeneApps.GoHome.DataModels\MottoBeneApps.GoHome.DataModels.csproj", "{EF6B8330-C5F4-4FEC-ABC9-8E7095286745}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MottoBeneApps.GoHome.DataModels.SQLite", "MottoBeneApps.GoHome.DataModels.SQLite\MottoBeneApps.GoHome.DataModels.SQLite.csproj", "{71984F56-6E20-41F5-B101-17D2447BA924}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{EF6B8330-C5F4-4FEC-ABC9-8E7095286745}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EF6B8330-C5F4-4FEC-ABC9-8E7095286745}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EF6B8330-C5F4-4FEC-ABC9-8E7095286745}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71984F56-6E20-41F5-B101-17D2447BA924}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71984F56-6E20-41F5-B101-17D2447BA924}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71984F56-6E20-41F5-B101-17D2447BA924}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71984F56-6E20-41F5-B101-17D2447BA924}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
