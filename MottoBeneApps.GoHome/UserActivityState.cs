@@ -7,7 +7,7 @@
     #endregion
 
 
-    public class UserActivityState
+    public sealed class UserActivityState
     {
         #region Constructors and Destructors
 

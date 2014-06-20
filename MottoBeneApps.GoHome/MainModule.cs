@@ -2,6 +2,7 @@
 {
     #region Namespace Imports
 
+    using System.Collections.Generic;
     using System.ComponentModel.Composition;
     using System.Reflection;
     using System.Windows;
@@ -9,7 +10,9 @@
     using Caliburn.Micro;
 
     using Gemini.Framework;
+    using Gemini.Framework.Results;
     using Gemini.Framework.Services;
+    using Gemini.Modules.MainMenu.Models;
 
     #endregion
 
@@ -42,6 +45,18 @@
 
             UserActivityTracker = new UserActivityTracker();
             UserActivityTracker.Start();
+
+            MainMenu.Find(KnownMenuItemNames.View).Add(new MenuItem("Activity Log", OpenActivityLogView));
+        }
+
+        #endregion
+
+
+        #region Methods
+
+        private IEnumerable<IResult> OpenActivityLogView()
+        {
+            yield return Show.Document<IUserActivityLog>();
         }
 
         #endregion

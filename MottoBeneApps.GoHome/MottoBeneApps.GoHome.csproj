@@ -13,6 +13,7 @@
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
+    <ExpressionBlendVersion>12.0.50429.0</ExpressionBlendVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -85,13 +86,17 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="IUserActivityLog.cs" />
+    <Compile Include="UserActivityLogView.xaml.cs">
+      <DependentUpon>UserActivityLogView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="LastInputInfo.cs" />
     <Compile Include="NativeMethods.cs" />
     <Compile Include="UserActivityState.cs" />
+    <Compile Include="UserActivityLogViewModel.cs" />
     <Compile Include="UserInputTracker.cs" />
     <Compile Include="IUserActivityTracker.cs" />
     <Compile Include="ShellViewModel.cs" />
@@ -131,6 +136,15 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\GoHome.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="UserActivityLogView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <DesignData Include="SampleData\UserActivityViewModelSampleData.xaml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
