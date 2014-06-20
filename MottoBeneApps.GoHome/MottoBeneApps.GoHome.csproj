@@ -95,8 +95,8 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="NativeMethods.cs" />
-    <Compile Include="UserActivityState.cs" />
     <Compile Include="UserActivityLogViewModel.cs" />
+    <Compile Include="DummyUserActivityStateRepository.cs" />
     <Compile Include="UserInputTracker.cs" />
     <Compile Include="IUserActivityTracker.cs" />
     <Compile Include="ShellViewModel.cs" />
@@ -145,6 +145,12 @@
   </ItemGroup>
   <ItemGroup>
     <DesignData Include="SampleData\UserActivityViewModelSampleData.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MottoBeneApps.GoHome.DataModels\MottoBeneApps.GoHome.DataModels.csproj">
+      <Project>{EF6B8330-C5F4-4FEC-ABC9-8E7095286745}</Project>
+      <Name>MottoBeneApps.GoHome.DataModels</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

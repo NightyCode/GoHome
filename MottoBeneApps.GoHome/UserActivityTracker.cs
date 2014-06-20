@@ -3,37 +3,37 @@
     #region Namespace Imports
 
     using System;
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
+    using System.ComponentModel.Composition;
 
     using Microsoft.Win32;
 
+    using MottoBeneApps.GoHome.DataModels;
     using MottoBeneApps.GoHome.Properties;
 
     #endregion
 
 
+    [Export(typeof(IUserActivityTracker))]
     internal sealed class UserActivityTracker : IUserActivityTracker
     {
         #region Constants and Fields
 
-        private readonly ObservableCollection<UserActivityState> _activityLog =
-            new ObservableCollection<UserActivityState>();
-
+        private readonly IUserActivityStateRepository _stateRepository;
         private DateTime _inputSequenceStartTime = DateTime.MinValue;
         private DateTime _lastUserInputTime = DateTime.MinValue;
 
         #endregion
 
 
-        #region Properties
+        #region Constructors and Destructors
 
-        public IEnumerable<UserActivityState> ActivityLog
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:System.Object"/> class.
+        /// </summary>
+        [ImportingConstructor]
+        public UserActivityTracker(IUserActivityStateRepository stateRepository)
         {
-            get
-            {
-                return _activityLog;
-            }
+            _stateRepository = stateRepository;
         }
 
         #endregion
@@ -123,8 +123,8 @@
 
             if (idleTime.TotalMilliseconds > Settings.Default.IdleThreshold)
             {
-                _activityLog.Add(new UserActivityState(_inputSequenceStartTime, _lastUserInputTime, false));
-                _activityLog.Add(new UserActivityState(_lastUserInputTime, currentTime, true));
+                _stateRepository.Add(new UserActivityState(_inputSequenceStartTime, _lastUserInputTime, false));
+                _stateRepository.Add(new UserActivityState(_lastUserInputTime, currentTime, true));
 
                 _inputSequenceStartTime = currentTime;
             }

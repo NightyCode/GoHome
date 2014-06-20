@@ -1,57 +1,62 @@
-﻿<GoHome:UserActivityLogViewModel xmlns:GoHome="clr-namespace:MottoBeneApps.GoHome" xmlns:System="clr-namespace:System;assembly=mscorlib" ContentId="Maecenas aenean nam class" DisplayName="Curabitur aliquam curae" IsNotifying="True" IsInitialized="False" IsActive="True" IsSelected="True" ShouldReopenOnStart="False">
-	<GoHome:UserActivityLogViewModel.ActivityLog>
-		<GoHome:UserActivityState EndTime="06/20/2014 11:08:58" Idle="True" StartTime="06/20/2014 11:08:58">
-			<GoHome:UserActivityState.Duration>
-				<System:TimeSpan/>
-			</GoHome:UserActivityState.Duration>
-		</GoHome:UserActivityState>
-		<GoHome:UserActivityState EndTime="06/20/2014 11:08:58" Idle="False" StartTime="06/20/2014 11:08:58">
-			<GoHome:UserActivityState.Duration>
-				<System:TimeSpan/>
-			</GoHome:UserActivityState.Duration>
-		</GoHome:UserActivityState>
-		<GoHome:UserActivityState EndTime="06/20/2014 11:08:58" Idle="True" StartTime="06/20/2014 11:08:58">
-			<GoHome:UserActivityState.Duration>
-				<System:TimeSpan/>
-			</GoHome:UserActivityState.Duration>
-		</GoHome:UserActivityState>
-		<GoHome:UserActivityState EndTime="06/20/2014 11:08:58" Idle="False" StartTime="06/20/2014 11:08:58">
-			<GoHome:UserActivityState.Duration>
-				<System:TimeSpan/>
-			</GoHome:UserActivityState.Duration>
-		</GoHome:UserActivityState>
-		<GoHome:UserActivityState EndTime="06/20/2014 11:08:58" Idle="True" StartTime="06/20/2014 11:08:58">
-			<GoHome:UserActivityState.Duration>
-				<System:TimeSpan/>
-			</GoHome:UserActivityState.Duration>
-		</GoHome:UserActivityState>
-		<GoHome:UserActivityState EndTime="06/20/2014 11:08:58" Idle="False" StartTime="06/20/2014 11:08:58">
-			<GoHome:UserActivityState.Duration>
-				<System:TimeSpan/>
-			</GoHome:UserActivityState.Duration>
-		</GoHome:UserActivityState>
-		<GoHome:UserActivityState EndTime="06/20/2014 11:08:58" Idle="True" StartTime="06/20/2014 11:08:58">
-			<GoHome:UserActivityState.Duration>
-				<System:TimeSpan/>
-			</GoHome:UserActivityState.Duration>
-		</GoHome:UserActivityState>
-		<GoHome:UserActivityState EndTime="06/20/2014 11:08:58" Idle="False" StartTime="06/20/2014 11:08:58">
-			<GoHome:UserActivityState.Duration>
-				<System:TimeSpan/>
-			</GoHome:UserActivityState.Duration>
-		</GoHome:UserActivityState>
-		<GoHome:UserActivityState EndTime="06/20/2014 11:08:58" Idle="True" StartTime="06/20/2014 11:08:58">
-			<GoHome:UserActivityState.Duration>
-				<System:TimeSpan/>
-			</GoHome:UserActivityState.Duration>
-		</GoHome:UserActivityState>
-		<GoHome:UserActivityState EndTime="06/20/2014 11:08:58" Idle="False" StartTime="06/20/2014 11:08:58">
-			<GoHome:UserActivityState.Duration>
-				<System:TimeSpan/>
-			</GoHome:UserActivityState.Duration>
-		</GoHome:UserActivityState>
-	</GoHome:UserActivityLogViewModel.ActivityLog>
-	<GoHome:UserActivityLogViewModel.Id>
-		<System:Guid/>
-	</GoHome:UserActivityLogViewModel.Id>
-</GoHome:UserActivityLogViewModel>
+﻿<goHome:UserActivityLogViewModel xmlns:goHome="clr-namespace:MottoBeneApps.GoHome"
+                                 xmlns:system="clr-namespace:System;assembly=mscorlib"
+                                 xmlns:dataModels="clr-namespace:MottoBeneApps.GoHome.DataModels;assembly=MottoBeneApps.GoHome.DataModels"
+                                 ContentId="Maecenas aenean nam class" DisplayName="Curabitur aliquam curae"
+                                 IsNotifying="True" IsInitialized="False" IsActive="True" IsSelected="True"
+                                 ShouldReopenOnStart="False">
+    <goHome:UserActivityLogViewModel.ActivityLog>
+        <dataModels:UserActivityState EndTime="06/20/2014 11:08:58" Idle="True" StartTime="06/20/2014 11:08:58">
+            <dataModels:UserActivityState.Duration>
+                <system:TimeSpan />
+            </dataModels:UserActivityState.Duration>
+        </dataModels:UserActivityState>
+        <dataModels:UserActivityState EndTime="06/20/2014 11:08:58" Idle="False" StartTime="06/20/2014 11:08:58">
+            <dataModels:UserActivityState.Duration>
+                <system:TimeSpan />
+            </dataModels:UserActivityState.Duration>
+        </dataModels:UserActivityState>
+        <dataModels:UserActivityState EndTime="06/20/2014 11:08:58" Idle="True" StartTime="06/20/2014 11:08:58">
+            <dataModels:UserActivityState.Duration>
+                <system:TimeSpan />
+            </dataModels:UserActivityState.Duration>
+        </dataModels:UserActivityState>
+        <dataModels:UserActivityState EndTime="06/20/2014 11:08:58" Idle="False" StartTime="06/20/2014 11:08:58">
+            <dataModels:UserActivityState.Duration>
+                <system:TimeSpan />
+            </dataModels:UserActivityState.Duration>
+        </dataModels:UserActivityState>
+        <dataModels:UserActivityState EndTime="06/20/2014 11:08:58" Idle="True" StartTime="06/20/2014 11:08:58">
+            <dataModels:UserActivityState.Duration>
+                <system:TimeSpan />
+            </dataModels:UserActivityState.Duration>
+        </dataModels:UserActivityState>
+        <dataModels:UserActivityState EndTime="06/20/2014 11:08:58" Idle="False" StartTime="06/20/2014 11:08:58">
+            <dataModels:UserActivityState.Duration>
+                <system:TimeSpan />
+            </dataModels:UserActivityState.Duration>
+        </dataModels:UserActivityState>
+        <dataModels:UserActivityState EndTime="06/20/2014 11:08:58" Idle="True" StartTime="06/20/2014 11:08:58">
+            <dataModels:UserActivityState.Duration>
+                <system:TimeSpan />
+            </dataModels:UserActivityState.Duration>
+        </dataModels:UserActivityState>
+        <dataModels:UserActivityState EndTime="06/20/2014 11:08:58" Idle="False" StartTime="06/20/2014 11:08:58">
+            <dataModels:UserActivityState.Duration>
+                <system:TimeSpan />
+            </dataModels:UserActivityState.Duration>
+        </dataModels:UserActivityState>
+        <dataModels:UserActivityState EndTime="06/20/2014 11:08:58" Idle="True" StartTime="06/20/2014 11:08:58">
+            <dataModels:UserActivityState.Duration>
+                <system:TimeSpan />
+            </dataModels:UserActivityState.Duration>
+        </dataModels:UserActivityState>
+        <dataModels:UserActivityState EndTime="06/20/2014 11:08:58" Idle="False" StartTime="06/20/2014 11:08:58">
+            <dataModels:UserActivityState.Duration>
+                <system:TimeSpan />
+            </dataModels:UserActivityState.Duration>
+        </dataModels:UserActivityState>
+    </goHome:UserActivityLogViewModel.ActivityLog>
+    <goHome:UserActivityLogViewModel.Id>
+        <system:Guid />
+    </goHome:UserActivityLogViewModel.Id>
+</goHome:UserActivityLogViewModel>

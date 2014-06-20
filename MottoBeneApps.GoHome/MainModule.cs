@@ -22,7 +22,7 @@
     {
         #region Properties
 
-        [Export(typeof(IUserActivityTracker))]
+        [Import(typeof(IUserActivityTracker))]
         public IUserActivityTracker UserActivityTracker
         {
             get;
@@ -43,7 +43,6 @@
             MainWindow.Icon = IoC.Get<IResourceManager>()
                 .GetBitmap("Resources/GoHome.png", Assembly.GetExecutingAssembly().GetAssemblyName());
 
-            UserActivityTracker = new UserActivityTracker();
             UserActivityTracker.Start();
 
             MainMenu.Find(KnownMenuItemNames.View).Add(new MenuItem("Activity Log", OpenActivityLogView));

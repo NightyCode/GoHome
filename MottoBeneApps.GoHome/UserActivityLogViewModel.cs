@@ -3,9 +3,12 @@
     #region Namespace Imports
 
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.ComponentModel.Composition;
 
     using Gemini.Framework;
+
+    using MottoBeneApps.GoHome.DataModels;
 
     #endregion
 
@@ -15,7 +18,8 @@
     {
         #region Constants and Fields
 
-        private readonly IUserActivityTracker _activityTracker;
+        private readonly IUserActivityStateRepository _stateRepository;
+        private readonly ObservableCollection<UserActivityState> _states = new ObservableCollection<UserActivityState>();
 
         #endregion
 
@@ -23,9 +27,9 @@
         #region Constructors and Destructors
 
         [ImportingConstructor]
-        public UserActivityLogViewModel(IUserActivityTracker activityTracker)
+        public UserActivityLogViewModel(IUserActivityStateRepository stateRepository)
         {
-            _activityTracker = activityTracker;
+            _stateRepository = stateRepository;
             DisplayName = "Activity Log";
         }
 
@@ -38,7 +42,26 @@
         {
             get
             {
-                return _activityTracker.ActivityLog;
+                return _states;
+            }
+        }
+
+        #endregion
+
+
+        #region Methods
+
+        /// <summary>
+        /// Called when an attached view's Loaded event fires.
+        /// </summary>
+        /// <param name="view"/>
+        protected override void OnViewLoaded(object view)
+        {
+            base.OnViewLoaded(view);
+
+            foreach (var state in _stateRepository.GetStates())
+            {
+                _states.Add(state);
             }
         }
 
