@@ -17,6 +17,18 @@
     [Export(typeof(IModule))]
     public sealed class MainModule : ModuleBase
     {
+        #region Properties
+
+        [Export(typeof(IUserActivityTracker))]
+        public IUserActivityTracker UserActivityTracker
+        {
+            get;
+            private set;
+        }
+
+        #endregion
+
+
         #region Public Methods
 
         public override void Initialize()
@@ -27,6 +39,9 @@
             MainWindow.Title = "Go Home";
             MainWindow.Icon = IoC.Get<IResourceManager>()
                 .GetBitmap("Resources/GoHome.png", Assembly.GetExecutingAssembly().GetAssemblyName());
+
+            UserActivityTracker = new UserActivityTracker();
+            UserActivityTracker.Start();
         }
 
         #endregion

@@ -89,7 +89,13 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="LastInputInfo.cs" />
+    <Compile Include="NativeMethods.cs" />
+    <Compile Include="UserActivityState.cs" />
+    <Compile Include="UserInputTracker.cs" />
+    <Compile Include="IUserActivityTracker.cs" />
     <Compile Include="ShellViewModel.cs" />
+    <Compile Include="UserActivityTracker.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainModule.cs" />
