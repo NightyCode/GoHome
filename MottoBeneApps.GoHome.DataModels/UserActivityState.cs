@@ -14,6 +14,14 @@
         /// <summary>
         /// Initializes a new instance of the <see cref="T:System.Object"/> class.
         /// </summary>
+        public UserActivityState()
+        {
+        }
+
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:System.Object"/> class.
+        /// </summary>
         public UserActivityState(DateTime startTime, DateTime endTime, bool idle)
         {
             StartTime = startTime;
@@ -37,19 +45,25 @@
         public DateTime EndTime
         {
             get;
-            private set;
+            set;
+        }
+
+        public int Id
+        {
+            get;
+            set;
         }
 
         public bool Idle
         {
             get;
-            private set;
+            set;
         }
 
         public DateTime StartTime
         {
             get;
-            private set;
+            set;
         }
 
         #endregion

@@ -96,7 +96,6 @@
     </Compile>
     <Compile Include="NativeMethods.cs" />
     <Compile Include="UserActivityLogViewModel.cs" />
-    <Compile Include="DummyUserActivityStateRepository.cs" />
     <Compile Include="UserInputTracker.cs" />
     <Compile Include="IUserActivityTracker.cs" />
     <Compile Include="ShellViewModel.cs" />
@@ -129,7 +128,9 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\GoHome.png" />
