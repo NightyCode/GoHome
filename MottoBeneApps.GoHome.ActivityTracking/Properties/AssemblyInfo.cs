@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("MottoBeneApps.GoHome.DataModels.SQLite")]
+[assembly: AssemblyTitle("MottoBeneApps.GoHome.ActivityTracking")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("MottoBeneApps.GoHome.DataModels.SQLite")]
+[assembly: AssemblyProduct("MottoBeneApps.GoHome.ActivityTracking")]
 [assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -19,7 +19,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("0d833dc4-f653-44d3-9a86-e8a6a2c88151")]
+[assembly: Guid("daf548ea-ed68-49b1-925f-610946225b56")]
 
 // Version information for an assembly consists of the following four values:
 //

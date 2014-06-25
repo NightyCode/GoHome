@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace MottoBeneApps.GoHome.Properties {
+namespace MottoBeneApps.GoHome.ActivityTracking.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
@@ -20,6 +20,18 @@ namespace MottoBeneApps.GoHome.Properties {
         public static Settings Default {
             get {
                 return defaultInstance;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1000")]
+        public int IdleThreshold {
+            get {
+                return ((int)(this["IdleThreshold"]));
+            }
+            set {
+                this["IdleThreshold"] = value;
             }
         }
     }

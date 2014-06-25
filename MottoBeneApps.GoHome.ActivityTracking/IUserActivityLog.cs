@@ -1,4 +1,4 @@
-﻿namespace MottoBeneApps.GoHome
+﻿namespace MottoBeneApps.GoHome.ActivityTracking
 {
     #region Namespace Imports
 

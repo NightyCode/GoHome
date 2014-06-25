@@ -1,10 +1,11 @@
-﻿<goHome:UserActivityLogViewModel xmlns:goHome="clr-namespace:MottoBeneApps.GoHome"
+﻿<activityTracking:UserActivityLogViewModel
                                  xmlns:system="clr-namespace:System;assembly=mscorlib"
                                  xmlns:dataModels="clr-namespace:MottoBeneApps.GoHome.DataModels;assembly=MottoBeneApps.GoHome.DataModels"
+                                 xmlns:activityTracking="clr-namespace:MottoBeneApps.GoHome.ActivityTracking;assembly=MottoBeneApps.GoHome.ActivityTracking"
                                  ContentId="Maecenas aenean nam class" DisplayName="Curabitur aliquam curae"
                                  IsNotifying="True" IsInitialized="False" IsActive="True" IsSelected="True"
                                  ShouldReopenOnStart="False">
-    <goHome:UserActivityLogViewModel.ActivityLog>
+    <activityTracking:UserActivityLogViewModel.ActivityLog>
         <dataModels:UserActivityState EndTime="06/20/2014 11:08:58" Idle="True" StartTime="06/20/2014 11:08:58">
             <dataModels:UserActivityState.Duration>
                 <system:TimeSpan />
@@ -55,8 +56,8 @@
                 <system:TimeSpan />
             </dataModels:UserActivityState.Duration>
         </dataModels:UserActivityState>
-    </goHome:UserActivityLogViewModel.ActivityLog>
-    <goHome:UserActivityLogViewModel.Id>
+    </activityTracking:UserActivityLogViewModel.ActivityLog>
+    <activityTracking:UserActivityLogViewModel.Id>
         <system:Guid />
-    </goHome:UserActivityLogViewModel.Id>
-</goHome:UserActivityLogViewModel>
+    </activityTracking:UserActivityLogViewModel.Id>
+</activityTracking:UserActivityLogViewModel>

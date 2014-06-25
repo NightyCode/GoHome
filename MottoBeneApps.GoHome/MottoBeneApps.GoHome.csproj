@@ -105,20 +105,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="IUserActivityLog.cs" />
-    <Compile Include="UserActivityLogView.xaml.cs">
-      <DependentUpon>UserActivityLogView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="NativeMethods.cs" />
-    <Compile Include="UserActivityLogViewModel.cs" />
-    <Compile Include="UserInputTracker.cs" />
-    <Compile Include="IUserActivityTracker.cs" />
     <Compile Include="ShellViewModel.cs" />
-    <Compile Include="UserActivityTracker.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainModule.cs" />
@@ -158,15 +149,10 @@
     <Resource Include="Resources\GoHome.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="UserActivityLogView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <DesignData Include="SampleData\UserActivityViewModelSampleData.xaml" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\MottoBeneApps.GoHome.ActivityTracking\MottoBeneApps.GoHome.ActivityTracking.csproj">
+      <Project>{9fa3eddc-88cd-42d1-8e22-8acb6aba4266}</Project>
+      <Name>MottoBeneApps.GoHome.ActivityTracking</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MottoBeneApps.GoHome.DataModels.SQLite\MottoBeneApps.GoHome.DataModels.SQLite.csproj">
       <Project>{71984f56-6e20-41f5-b101-17d2447ba924}</Project>
       <Name>MottoBeneApps.GoHome.DataModels.SQLite</Name>

@@ -1,4 +1,4 @@
-﻿namespace MottoBeneApps.GoHome
+﻿namespace MottoBeneApps.GoHome.ActivityTracking
 {
     #region Namespace Imports
 
@@ -7,8 +7,8 @@
 
     using Microsoft.Win32;
 
+    using MottoBeneApps.GoHome.ActivityTracking.Properties;
     using MottoBeneApps.GoHome.DataModels;
-    using MottoBeneApps.GoHome.Properties;
 
     #endregion
 

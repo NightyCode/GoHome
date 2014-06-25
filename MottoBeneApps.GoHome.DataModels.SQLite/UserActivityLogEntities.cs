@@ -7,7 +7,7 @@ namespace MottoBeneApps.GoHome.DataModels.SQLite
     #endregion
 
 
-    public class UserActivityLogEntities : DbContext
+    internal sealed class UserActivityLogEntities : DbContext
     {
         #region Constructors and Destructors
 
@@ -21,7 +21,7 @@ namespace MottoBeneApps.GoHome.DataModels.SQLite
 
         #region Properties
 
-        public virtual DbSet<UserActivityState> ActivityStates
+        public DbSet<UserActivityState> ActivityStates
         {
             get;
             set;

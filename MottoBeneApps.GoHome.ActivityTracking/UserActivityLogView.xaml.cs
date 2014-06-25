@@ -1,4 +1,4 @@
-﻿namespace MottoBeneApps.GoHome
+﻿namespace MottoBeneApps.GoHome.ActivityTracking
 {
     /// <summary>
     /// Interaction logic for UserActivityLogView.xaml

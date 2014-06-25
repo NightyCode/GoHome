@@ -1,4 +1,4 @@
-﻿namespace MottoBeneApps.GoHome
+﻿namespace MottoBeneApps.GoHome.ActivityTracking
 {
     #region Namespace Imports
 
@@ -14,7 +14,7 @@
 
 
     [Export(typeof(IUserActivityLog))]
-    public sealed class UserActivityLogViewModel : Document, IUserActivityLog
+    internal sealed class UserActivityLogViewModel : Document, IUserActivityLog
     {
         #region Constants and Fields
 
