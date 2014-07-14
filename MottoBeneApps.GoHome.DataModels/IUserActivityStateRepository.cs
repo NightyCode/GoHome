@@ -12,6 +12,7 @@
         #region Public Methods
 
         void Add(UserActivityState state);
+        UserActivityState GetLastUserActivityState();
         IEnumerable<UserActivityState> GetStates();
         void Update(UserActivityState state);
 

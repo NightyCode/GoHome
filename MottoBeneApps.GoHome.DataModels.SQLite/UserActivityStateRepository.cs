@@ -16,29 +16,43 @@
 
         public void Add(UserActivityState state)
         {
-            var entities = new UserActivityLogEntities();
-            entities.ActivityStates.Add(state);
-            entities.SaveChanges();
+            using (var entities = new UserActivityLogEntities())
+            {
+                entities.ActivityStates.Add(state);
+                entities.SaveChanges();
+            }
+        }
+
+
+        public UserActivityState GetLastUserActivityState()
+        {
+            using (var entities = new UserActivityLogEntities())
+            {
+                return entities.ActivityStates.OrderByDescending(s => s.EndTime).Take(1).ToList().FirstOrDefault();
+            }
         }
 
 
         public IEnumerable<UserActivityState> GetStates()
         {
-            var entities = new UserActivityLogEntities();
-            return entities.ActivityStates;
+            using (var entities = new UserActivityLogEntities())
+            {
+                return entities.ActivityStates.ToList();
+            }
         }
 
 
         public void Update(UserActivityState state)
         {
-            var entities = new UserActivityLogEntities();
+            using (var entities = new UserActivityLogEntities())
+            {
+                var existingState = entities.ActivityStates.Single(s => s.Id == state.Id);
+                existingState.StartTime = state.StartTime;
+                existingState.EndTime = state.EndTime;
+                existingState.Idle = state.Idle;
 
-            var existingState = entities.ActivityStates.Single(s => s.Id == state.Id);
-            existingState.StartTime = state.StartTime;
-            existingState.StartTime = state.StartTime;
-            existingState.Idle = state.Idle;
-
-            entities.SaveChanges();
+                entities.SaveChanges();
+            }
         }
 
         #endregion

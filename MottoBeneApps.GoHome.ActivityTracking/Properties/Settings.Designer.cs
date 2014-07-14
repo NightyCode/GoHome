@@ -34,5 +34,17 @@ namespace MottoBeneApps.GoHome.ActivityTracking.Properties {
                 this["IdleThreshold"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1000")]
+        public int ActiveThreshold {
+            get {
+                return ((int)(this["ActiveThreshold"]));
+            }
+            set {
+                this["ActiveThreshold"] = value;
+            }
+        }
     }
 }

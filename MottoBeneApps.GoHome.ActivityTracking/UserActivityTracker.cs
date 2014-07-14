@@ -127,6 +127,23 @@
 
             if (_lastUserInputTime == DateTime.MinValue)
             {
+                UserActivityState lastUserActivityState = _stateRepository.GetLastUserActivityState();
+
+                if (lastUserActivityState != null)
+                {
+                    if (lastUserActivityState.Idle)
+                    {
+                        _log.Info("Updated last idle activity period end time from {0} to {1}.", lastUserActivityState.EndTime, currentTime);
+                        lastUserActivityState.EndTime = currentTime;
+                        _stateRepository.Update(lastUserActivityState);
+                    }
+                    else
+                    {
+                        _log.Info("Added idle activity period: {0} to {1}.", lastUserActivityState.EndTime, currentTime);
+                        _stateRepository.Add(new UserActivityState(lastUserActivityState.EndTime, currentTime, true));
+                    }
+                }
+
                 _inputSequenceStartTime = currentTime;
                 _lastUserInputTime = currentTime;
 
@@ -137,11 +154,25 @@
 
             if (idleTime.TotalMilliseconds > Settings.Default.IdleThreshold)
             {
-                _log.Info("Added non idle activity period: {0} {1}.", _inputSequenceStartTime, _lastUserInputTime);
-                _stateRepository.Add(new UserActivityState(_inputSequenceStartTime, _lastUserInputTime, false));
+                TimeSpan activeTime = _lastUserInputTime - _inputSequenceStartTime;
 
-                _log.Info("Added idle activity period: {0} {1}.", _lastUserInputTime, currentTime);
-                _stateRepository.Add(new UserActivityState(_lastUserInputTime, currentTime, true));
+                if (activeTime.TotalMilliseconds > Settings.Default.ActiveThreshold)
+                {
+                    _log.Info("Added activity period: {0} to {1}.", _inputSequenceStartTime, _lastUserInputTime);
+                    _stateRepository.Add(new UserActivityState(_inputSequenceStartTime, _lastUserInputTime, false));
+
+                    _log.Info("Added idle activity period: {0} to {1}.", _lastUserInputTime, currentTime);
+                    _stateRepository.Add(new UserActivityState(_lastUserInputTime, currentTime, true));
+                }
+                else
+                {
+                    _inputSequenceStartTime = DateTime.MinValue;
+                    _lastUserInputTime = DateTime.MinValue;
+
+                    OnUserInput(sender, eventArgs);
+
+                    return;
+                }
 
                 _inputSequenceStartTime = currentTime;
             }
