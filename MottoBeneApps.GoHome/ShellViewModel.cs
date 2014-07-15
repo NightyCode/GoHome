@@ -17,6 +17,8 @@
 
     using Hardcodet.Wpf.TaskbarNotification;
 
+    using MottoBeneApps.GoHome.Properties;
+
     #endregion
 
 
@@ -37,6 +39,30 @@
         static ShellViewModel()
         {
             ViewLocator.AddNamespaceMapping(typeof(ShellViewModel).Namespace, typeof(ShellView).Namespace);
+        }
+
+        #endregion
+
+
+        #region Properties
+
+        private bool StartHiddenToTray
+        {
+            get
+            {
+                return Settings.Default.StartHiddenToTray;
+            }
+
+            set
+            {
+                if (StartHiddenToTray == value)
+                {
+                    return;
+                }
+
+                Settings.Default.StartHiddenToTray = value;
+                Settings.Default.Save();
+            }
         }
 
         #endregion
@@ -78,6 +104,11 @@
             _taskbarIcon = new TaskbarIcon { Icon = new Icon(iconStream), Visibility = Visibility.Hidden };
 
             _taskbarIcon.TrayMouseDoubleClick += OnTaskbarIconTrayMouseDoubleClick;
+
+            if (Settings.Default.StartHiddenToTray)
+            {
+                _window.WindowState = WindowState.Minimized;
+            }
         }
 
 
@@ -97,6 +128,7 @@
             _window.Show();
             _window.WindowState = _previousWindowState;
             _taskbarIcon.Visibility = Visibility.Hidden;
+            StartHiddenToTray = false;
         }
 
 
@@ -108,6 +140,7 @@
             {
                 _taskbarIcon.Visibility = Visibility.Visible;
                 window.Hide();
+                StartHiddenToTray = true;
             }
             else
             {
