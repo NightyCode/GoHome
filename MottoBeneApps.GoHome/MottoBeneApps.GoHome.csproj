@@ -112,6 +112,10 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ApplicationSettingsView.xaml.cs">
+      <DependentUpon>ApplicationSettingsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ApplicationSettingsViewModel.cs" />
     <Compile Include="Bootstrapper.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="ShellViewModel.cs" />
@@ -172,6 +176,12 @@
       <Project>{EF6B8330-C5F4-4FEC-ABC9-8E7095286745}</Project>
       <Name>MottoBeneApps.GoHome.DataModels</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="ApplicationSettingsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
