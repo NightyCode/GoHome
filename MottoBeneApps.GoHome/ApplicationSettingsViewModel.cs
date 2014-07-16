@@ -82,7 +82,7 @@
         {
             get
             {
-                return Assembly.GetExecutingAssembly().FullName;
+                return Assembly.GetExecutingAssembly().GetName().Name;
             }
         }
 
