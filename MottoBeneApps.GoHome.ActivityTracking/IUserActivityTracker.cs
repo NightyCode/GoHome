@@ -5,7 +5,7 @@ namespace MottoBeneApps.GoHome.ActivityTracking
         #region Public Methods
 
         void Start();
-        void Stop();
+        void Stop(bool applicationShutDown);
 
         #endregion
     }

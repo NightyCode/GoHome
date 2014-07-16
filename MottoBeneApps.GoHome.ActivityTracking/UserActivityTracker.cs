@@ -4,6 +4,7 @@
 
     using System;
     using System.ComponentModel.Composition;
+    using System.Threading.Tasks;
 
     using Caliburn.Micro;
 
@@ -20,11 +21,13 @@
     {
         #region Constants and Fields
 
-        private readonly ILog _log = LogManager.GetLog(typeof(UserActivityTracker));
+        private static readonly object _syncRoot = new object();
 
         private readonly IActivityRecordsRepository _activityRecordsRepository;
+        private readonly ILog _log = LogManager.GetLog(typeof(UserActivityTracker));
         private DateTime _inputSequenceStartTime = DateTime.MinValue;
         private DateTime _lastUserInputTime = DateTime.MinValue;
+        private bool _systemShutDown;
 
         #endregion
 
@@ -52,22 +55,40 @@
             SystemEvents.PowerModeChanged += OnPowerModeChanged;
             SystemEvents.SessionSwitch += OnSessionSwitch;
             SystemEvents.SessionEnding += OnSessionEnding;
+            SystemEvents.SessionEnded += OnSessionEnded;
 
             UserInputTracker.UserInputDetected += OnUserInput;
             UserInputTracker.Start();
         }
 
 
-        public void Stop()
+        public void Stop(bool applicationShutDown)
         {
             _log.Info("User activity tracking stopped.");
 
             SystemEvents.PowerModeChanged -= OnPowerModeChanged;
             SystemEvents.SessionSwitch -= OnSessionSwitch;
             SystemEvents.SessionEnding -= OnSessionEnding;
+            SystemEvents.SessionEnded -= OnSessionEnded;
 
             UserInputTracker.Stop();
             UserInputTracker.UserInputDetected -= OnUserInput;
+
+            if (!applicationShutDown || _systemShutDown)
+            {
+                return;
+            }
+
+            // User has closed the app himself. Log the last activity record.
+            TimeSpan activeTime = _lastUserInputTime - _inputSequenceStartTime;
+
+            if (activeTime.TotalMilliseconds < Settings.Default.ActiveThreshold)
+            {
+                return;
+            }
+
+            _log.Info("Added activity period on app shutdown: {0} to {1}.", _inputSequenceStartTime, _lastUserInputTime);
+            _activityRecordsRepository.Add(new ActivityRecord(_inputSequenceStartTime, _lastUserInputTime, false));
         }
 
         #endregion
@@ -86,6 +107,14 @@
                 case PowerModes.Suspend:
                     break;
             }
+        }
+
+
+        private void OnSessionEnded(object sender, SessionEndedEventArgs e)
+        {
+            _log.Info("Session ended with reason: '{0}'", e.Reason);
+
+            _systemShutDown = true;
         }
 
 
@@ -121,63 +150,80 @@
         }
 
 
-        private void OnUserInput(object sender, EventArgs eventArgs)
+        private void OnUserActivity()
         {
-            DateTime currentTime = DateTime.Now;
-
-            if (_lastUserInputTime == DateTime.MinValue)
+            lock (_syncRoot)
             {
-                ActivityRecord lastActivityRecord = _activityRecordsRepository.GetLastRecord();
+                DateTime currentTime = DateTime.Now;
 
-                if (lastActivityRecord != null)
+                if (_lastUserInputTime == DateTime.MinValue)
                 {
-                    if (lastActivityRecord.Idle)
+                    ActivityRecord lastActivityRecord = _activityRecordsRepository.GetLastRecord();
+
+                    if (lastActivityRecord != null)
                     {
-                        _log.Info("Updated last idle activity period end time from {0} to {1}.", lastActivityRecord.EndTime, currentTime);
-                        lastActivityRecord.EndTime = currentTime;
-                        _activityRecordsRepository.Update(lastActivityRecord);
+                        if (lastActivityRecord.Idle)
+                        {
+                            _log.Info(
+                                "Updated last idle activity period end time from {0} to {1}.",
+                                lastActivityRecord.EndTime,
+                                currentTime);
+                            lastActivityRecord.EndTime = currentTime;
+                            _activityRecordsRepository.Update(lastActivityRecord);
+                        }
+                        else
+                        {
+                            _log.Info(
+                                "Added idle activity period: {0} to {1}.",
+                                lastActivityRecord.EndTime,
+                                currentTime);
+                            _activityRecordsRepository.Add(
+                                new ActivityRecord(lastActivityRecord.EndTime, currentTime, true));
+                        }
                     }
-                    else
-                    {
-                        _log.Info("Added idle activity period: {0} to {1}.", lastActivityRecord.EndTime, currentTime);
-                        _activityRecordsRepository.Add(new ActivityRecord(lastActivityRecord.EndTime, currentTime, true));
-                    }
-                }
 
-                _inputSequenceStartTime = currentTime;
-                _lastUserInputTime = currentTime;
-
-                return;
-            }
-
-            TimeSpan idleTime = currentTime - _lastUserInputTime;
-
-            if (idleTime.TotalMilliseconds > Settings.Default.IdleThreshold)
-            {
-                TimeSpan activeTime = _lastUserInputTime - _inputSequenceStartTime;
-
-                if (activeTime.TotalMilliseconds > Settings.Default.ActiveThreshold)
-                {
-                    _log.Info("Added activity period: {0} to {1}.", _inputSequenceStartTime, _lastUserInputTime);
-                    _activityRecordsRepository.Add(new ActivityRecord(_inputSequenceStartTime, _lastUserInputTime, false));
-
-                    _log.Info("Added idle activity period: {0} to {1}.", _lastUserInputTime, currentTime);
-                    _activityRecordsRepository.Add(new ActivityRecord(_lastUserInputTime, currentTime, true));
-                }
-                else
-                {
-                    _inputSequenceStartTime = DateTime.MinValue;
-                    _lastUserInputTime = DateTime.MinValue;
-
-                    OnUserInput(sender, eventArgs);
+                    _inputSequenceStartTime = currentTime;
+                    _lastUserInputTime = currentTime;
 
                     return;
                 }
 
-                _inputSequenceStartTime = currentTime;
-            }
+                TimeSpan idleTime = currentTime - _lastUserInputTime;
 
-            _lastUserInputTime = currentTime;
+                if (idleTime.TotalMilliseconds > Settings.Default.IdleThreshold)
+                {
+                    TimeSpan activeTime = _lastUserInputTime - _inputSequenceStartTime;
+
+                    if (activeTime.TotalMilliseconds > Settings.Default.ActiveThreshold)
+                    {
+                        _log.Info("Added activity period: {0} to {1}.", _inputSequenceStartTime, _lastUserInputTime);
+                        _activityRecordsRepository.Add(
+                            new ActivityRecord(_inputSequenceStartTime, _lastUserInputTime, false));
+
+                        _log.Info("Added idle activity period: {0} to {1}.", _lastUserInputTime, currentTime);
+                        _activityRecordsRepository.Add(new ActivityRecord(_lastUserInputTime, currentTime, true));
+                    }
+                    else
+                    {
+                        _inputSequenceStartTime = DateTime.MinValue;
+                        _lastUserInputTime = DateTime.MinValue;
+
+                        OnUserActivity();
+
+                        return;
+                    }
+
+                    _inputSequenceStartTime = currentTime;
+                }
+
+                _lastUserInputTime = currentTime;
+            }
+        }
+
+
+        private void OnUserInput(object sender, EventArgs eventArgs)
+        {
+            Task.Run(() => OnUserActivity());
         }
 
         #endregion

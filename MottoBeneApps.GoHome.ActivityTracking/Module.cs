@@ -2,6 +2,7 @@
 {
     #region Namespace Imports
 
+    using System;
     using System.Collections.Generic;
     using System.ComponentModel.Composition;
 
@@ -9,6 +10,7 @@
 
     using Gemini.Framework;
     using Gemini.Framework.Results;
+    using Gemini.Framework.Services;
     using Gemini.Modules.MainMenu.Models;
 
     #endregion
@@ -38,6 +40,24 @@
             UserActivityTracker.Start();
 
             MainMenu.Find(KnownMenuItemNames.View).Add(new MenuItem("Activity Log", OpenActivityLogView));
+
+            var shell = IoC.Get<IShell>() as IDeactivate;
+
+            if (shell != null)
+            {
+                shell.Deactivated += OnShellDeactivated;
+            }
+        }
+
+
+        private void OnShellDeactivated(object sender, DeactivationEventArgs e)
+        {
+            if (!e.WasClosed)
+            {
+                return;
+            }
+
+            UserActivityTracker.Stop(true);
         }
 
         #endregion
