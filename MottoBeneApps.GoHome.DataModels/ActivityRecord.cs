@@ -8,7 +8,7 @@
     #endregion
 
 
-    public sealed class ActivityRecord
+    public class ActivityRecord
     {
         #region Constants and Fields
 
@@ -42,6 +42,19 @@
 
         #region Properties
 
+        public virtual Activity Activity
+        {
+            get;
+            set;
+        }
+
+        public int? ActivityId
+        {
+            get;
+            private set;
+        }
+
+
         public TimeSpan Duration
         {
             get
@@ -71,13 +84,14 @@
             }
         }
 
+
         public DateTime EndTime
         {
             get;
             set;
         }
 
-        public int Id
+        public int ActivityRecordId
         {
             get;
             private set;

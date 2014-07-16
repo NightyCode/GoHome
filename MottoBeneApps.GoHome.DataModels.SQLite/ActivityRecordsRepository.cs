@@ -60,7 +60,7 @@
         {
             using (var entities = new UserActivityLogEntities())
             {
-                var existingState = entities.ActivityRecords.Single(s => s.Id == activityRecord.Id);
+                var existingState = entities.ActivityRecords.Single(s => s.ActivityRecordId == activityRecord.ActivityRecordId);
                 existingState.StartTime = activityRecord.StartTime;
                 existingState.EndTime = activityRecord.EndTime;
                 existingState.Idle = activityRecord.Idle;

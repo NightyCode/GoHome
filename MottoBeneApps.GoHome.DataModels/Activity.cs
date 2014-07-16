@@ -10,17 +10,17 @@
             private set;
         }
 
-        public bool IsWork
-        {
-            get;
-            set;
-        }
-
-        public string Name
-        {
-            get;
-            set;
-        }
+//        public bool IsWork
+//        {
+//            get;
+//            set;
+//        }
+//
+//        public string Name
+//        {
+//            get;
+//            set;
+//        }
 
         #endregion
     }
