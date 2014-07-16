@@ -60,7 +60,7 @@
         {
             base.OnViewLoaded(view);
 
-            foreach (var state in _activityRecordsRepository.GetActivityLog(DateTime.Now, TimeSpan.FromHours(4)))
+            foreach (var state in _activityRecordsRepository.GetActivityLog(DateTime.Now))
             {
                 _states.Add(state);
             }

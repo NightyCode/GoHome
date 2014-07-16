@@ -25,15 +25,12 @@
         }
 
 
-        public IEnumerable<ActivityRecord> GetActivityLog(DateTime date, TimeSpan minimumDuration)
+        public IEnumerable<ActivityRecord> GetActivityLog(DateTime date)
         {
             using (var entities = new UserActivityLogEntities())
             {
-                long minimumDurationTicks = minimumDuration.Ticks;
-
                 return
-                    entities.ActivityRecords.Where(
-                        s => (s.StartTime <= date || s.EndTime <= date) && s.DurationTicks >= minimumDurationTicks).ToList();
+                    entities.ActivityRecords.Where(s => s.StartTime <= date || s.EndTime <= date).ToList();
             }
         }
 

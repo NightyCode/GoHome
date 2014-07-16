@@ -13,9 +13,8 @@
         #region Public Methods
 
         void Add(ActivityRecord activityRecord);
-        IEnumerable<ActivityRecord> GetActivityLog(DateTime date, TimeSpan minimumDuration);
+        IEnumerable<ActivityRecord> GetActivityLog(DateTime date);
         ActivityRecord GetLastRecord();
-        IEnumerable<ActivityRecord> GetRecords();
         void Update(ActivityRecord activityRecord);
 
         #endregion
