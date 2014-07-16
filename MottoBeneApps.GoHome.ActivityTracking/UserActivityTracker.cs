@@ -22,7 +22,7 @@
 
         private readonly ILog _log = LogManager.GetLog(typeof(UserActivityTracker));
 
-        private readonly IUserActivityStateRepository _stateRepository;
+        private readonly IActivityRecordsRepository _activityRecordsRepository;
         private DateTime _inputSequenceStartTime = DateTime.MinValue;
         private DateTime _lastUserInputTime = DateTime.MinValue;
 
@@ -35,9 +35,9 @@
         /// Initializes a new instance of the <see cref="T:System.Object"/> class.
         /// </summary>
         [ImportingConstructor]
-        public UserActivityTracker(IUserActivityStateRepository stateRepository)
+        public UserActivityTracker(IActivityRecordsRepository activityRecordsRepository)
         {
-            _stateRepository = stateRepository;
+            _activityRecordsRepository = activityRecordsRepository;
         }
 
         #endregion
@@ -127,20 +127,20 @@
 
             if (_lastUserInputTime == DateTime.MinValue)
             {
-                UserActivityState lastUserActivityState = _stateRepository.GetLastUserActivityState();
+                ActivityRecord lastActivityRecord = _activityRecordsRepository.GetLastRecord();
 
-                if (lastUserActivityState != null)
+                if (lastActivityRecord != null)
                 {
-                    if (lastUserActivityState.Idle)
+                    if (lastActivityRecord.Idle)
                     {
-                        _log.Info("Updated last idle activity period end time from {0} to {1}.", lastUserActivityState.EndTime, currentTime);
-                        lastUserActivityState.EndTime = currentTime;
-                        _stateRepository.Update(lastUserActivityState);
+                        _log.Info("Updated last idle activity period end time from {0} to {1}.", lastActivityRecord.EndTime, currentTime);
+                        lastActivityRecord.EndTime = currentTime;
+                        _activityRecordsRepository.Update(lastActivityRecord);
                     }
                     else
                     {
-                        _log.Info("Added idle activity period: {0} to {1}.", lastUserActivityState.EndTime, currentTime);
-                        _stateRepository.Add(new UserActivityState(lastUserActivityState.EndTime, currentTime, true));
+                        _log.Info("Added idle activity period: {0} to {1}.", lastActivityRecord.EndTime, currentTime);
+                        _activityRecordsRepository.Add(new ActivityRecord(lastActivityRecord.EndTime, currentTime, true));
                     }
                 }
 
@@ -159,10 +159,10 @@
                 if (activeTime.TotalMilliseconds > Settings.Default.ActiveThreshold)
                 {
                     _log.Info("Added activity period: {0} to {1}.", _inputSequenceStartTime, _lastUserInputTime);
-                    _stateRepository.Add(new UserActivityState(_inputSequenceStartTime, _lastUserInputTime, false));
+                    _activityRecordsRepository.Add(new ActivityRecord(_inputSequenceStartTime, _lastUserInputTime, false));
 
                     _log.Info("Added idle activity period: {0} to {1}.", _lastUserInputTime, currentTime);
-                    _stateRepository.Add(new UserActivityState(_lastUserInputTime, currentTime, true));
+                    _activityRecordsRepository.Add(new ActivityRecord(_lastUserInputTime, currentTime, true));
                 }
                 else
                 {

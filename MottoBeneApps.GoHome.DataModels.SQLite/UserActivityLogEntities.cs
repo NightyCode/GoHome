@@ -21,7 +21,13 @@ namespace MottoBeneApps.GoHome.DataModels.SQLite
 
         #region Properties
 
-        public DbSet<UserActivityState> ActivityStates
+        public DbSet<Activity> Activities
+        {
+            get;
+            set;
+        }
+
+        public DbSet<ActivityRecord> ActivityRecords
         {
             get;
             set;

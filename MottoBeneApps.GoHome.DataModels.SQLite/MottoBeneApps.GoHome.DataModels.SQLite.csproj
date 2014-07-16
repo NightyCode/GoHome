@@ -62,7 +62,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UserActivityLogEntities.cs" />
-    <Compile Include="UserActivityStateRepository.cs" />
+    <Compile Include="ActivityRecordsRepository.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MottoBeneApps.GoHome.DataModels\MottoBeneApps.GoHome.DataModels.csproj">

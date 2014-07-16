@@ -6,56 +6,56 @@
                                  IsNotifying="True" IsInitialized="False" IsActive="True" IsSelected="True"
                                  ShouldReopenOnStart="False">
     <activityTracking:UserActivityLogViewModel.ActivityLog>
-        <dataModels:UserActivityState EndTime="06/20/2014 11:08:58" Idle="True" StartTime="06/20/2014 11:08:58">
-            <dataModels:UserActivityState.Duration>
+        <dataModels:ActivityRecord EndTime="06/20/2014 11:08:58" Idle="True" StartTime="06/20/2014 11:08:58">
+            <dataModels:ActivityRecord.DurationTicks>
                 <system:TimeSpan />
-            </dataModels:UserActivityState.Duration>
-        </dataModels:UserActivityState>
-        <dataModels:UserActivityState EndTime="06/20/2014 11:08:58" Idle="False" StartTime="06/20/2014 11:08:58">
-            <dataModels:UserActivityState.Duration>
+            </dataModels:ActivityRecord.DurationTicks>
+        </dataModels:ActivityRecord>
+        <dataModels:ActivityRecord EndTime="06/20/2014 11:08:58" Idle="False" StartTime="06/20/2014 11:08:58">
+            <dataModels:ActivityRecord.DurationTicks>
                 <system:TimeSpan />
-            </dataModels:UserActivityState.Duration>
-        </dataModels:UserActivityState>
-        <dataModels:UserActivityState EndTime="06/20/2014 11:08:58" Idle="True" StartTime="06/20/2014 11:08:58">
-            <dataModels:UserActivityState.Duration>
+            </dataModels:ActivityRecord.DurationTicks>
+        </dataModels:ActivityRecord>
+        <dataModels:ActivityRecord EndTime="06/20/2014 11:08:58" Idle="True" StartTime="06/20/2014 11:08:58">
+            <dataModels:ActivityRecord.DurationTicks>
                 <system:TimeSpan />
-            </dataModels:UserActivityState.Duration>
-        </dataModels:UserActivityState>
-        <dataModels:UserActivityState EndTime="06/20/2014 11:08:58" Idle="False" StartTime="06/20/2014 11:08:58">
-            <dataModels:UserActivityState.Duration>
+            </dataModels:ActivityRecord.DurationTicks>
+        </dataModels:ActivityRecord>
+        <dataModels:ActivityRecord EndTime="06/20/2014 11:08:58" Idle="False" StartTime="06/20/2014 11:08:58">
+            <dataModels:ActivityRecord.DurationTicks>
                 <system:TimeSpan />
-            </dataModels:UserActivityState.Duration>
-        </dataModels:UserActivityState>
-        <dataModels:UserActivityState EndTime="06/20/2014 11:08:58" Idle="True" StartTime="06/20/2014 11:08:58">
-            <dataModels:UserActivityState.Duration>
+            </dataModels:ActivityRecord.DurationTicks>
+        </dataModels:ActivityRecord>
+        <dataModels:ActivityRecord EndTime="06/20/2014 11:08:58" Idle="True" StartTime="06/20/2014 11:08:58">
+            <dataModels:ActivityRecord.DurationTicks>
                 <system:TimeSpan />
-            </dataModels:UserActivityState.Duration>
-        </dataModels:UserActivityState>
-        <dataModels:UserActivityState EndTime="06/20/2014 11:08:58" Idle="False" StartTime="06/20/2014 11:08:58">
-            <dataModels:UserActivityState.Duration>
+            </dataModels:ActivityRecord.DurationTicks>
+        </dataModels:ActivityRecord>
+        <dataModels:ActivityRecord EndTime="06/20/2014 11:08:58" Idle="False" StartTime="06/20/2014 11:08:58">
+            <dataModels:ActivityRecord.DurationTicks>
                 <system:TimeSpan />
-            </dataModels:UserActivityState.Duration>
-        </dataModels:UserActivityState>
-        <dataModels:UserActivityState EndTime="06/20/2014 11:08:58" Idle="True" StartTime="06/20/2014 11:08:58">
-            <dataModels:UserActivityState.Duration>
+            </dataModels:ActivityRecord.DurationTicks>
+        </dataModels:ActivityRecord>
+        <dataModels:ActivityRecord EndTime="06/20/2014 11:08:58" Idle="True" StartTime="06/20/2014 11:08:58">
+            <dataModels:ActivityRecord.DurationTicks>
                 <system:TimeSpan />
-            </dataModels:UserActivityState.Duration>
-        </dataModels:UserActivityState>
-        <dataModels:UserActivityState EndTime="06/20/2014 11:08:58" Idle="False" StartTime="06/20/2014 11:08:58">
-            <dataModels:UserActivityState.Duration>
+            </dataModels:ActivityRecord.DurationTicks>
+        </dataModels:ActivityRecord>
+        <dataModels:ActivityRecord EndTime="06/20/2014 11:08:58" Idle="False" StartTime="06/20/2014 11:08:58">
+            <dataModels:ActivityRecord.DurationTicks>
                 <system:TimeSpan />
-            </dataModels:UserActivityState.Duration>
-        </dataModels:UserActivityState>
-        <dataModels:UserActivityState EndTime="06/20/2014 11:08:58" Idle="True" StartTime="06/20/2014 11:08:58">
-            <dataModels:UserActivityState.Duration>
+            </dataModels:ActivityRecord.DurationTicks>
+        </dataModels:ActivityRecord>
+        <dataModels:ActivityRecord EndTime="06/20/2014 11:08:58" Idle="True" StartTime="06/20/2014 11:08:58">
+            <dataModels:ActivityRecord.DurationTicks>
                 <system:TimeSpan />
-            </dataModels:UserActivityState.Duration>
-        </dataModels:UserActivityState>
-        <dataModels:UserActivityState EndTime="06/20/2014 11:08:58" Idle="False" StartTime="06/20/2014 11:08:58">
-            <dataModels:UserActivityState.Duration>
+            </dataModels:ActivityRecord.DurationTicks>
+        </dataModels:ActivityRecord>
+        <dataModels:ActivityRecord EndTime="06/20/2014 11:08:58" Idle="False" StartTime="06/20/2014 11:08:58">
+            <dataModels:ActivityRecord.DurationTicks>
                 <system:TimeSpan />
-            </dataModels:UserActivityState.Duration>
-        </dataModels:UserActivityState>
+            </dataModels:ActivityRecord.DurationTicks>
+        </dataModels:ActivityRecord>
     </activityTracking:UserActivityLogViewModel.ActivityLog>
     <activityTracking:UserActivityLogViewModel.Id>
         <system:Guid />

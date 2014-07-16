@@ -2,6 +2,7 @@
 {
     #region Namespace Imports
 
+    using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.ComponentModel.Composition;
@@ -18,8 +19,8 @@
     {
         #region Constants and Fields
 
-        private readonly IUserActivityStateRepository _stateRepository;
-        private readonly ObservableCollection<UserActivityState> _states = new ObservableCollection<UserActivityState>();
+        private readonly IActivityRecordsRepository _activityRecordsRepository;
+        private readonly ObservableCollection<ActivityRecord> _states = new ObservableCollection<ActivityRecord>();
 
         #endregion
 
@@ -27,9 +28,9 @@
         #region Constructors and Destructors
 
         [ImportingConstructor]
-        public UserActivityLogViewModel(IUserActivityStateRepository stateRepository)
+        public UserActivityLogViewModel(IActivityRecordsRepository activityRecordsRepository)
         {
-            _stateRepository = stateRepository;
+            _activityRecordsRepository = activityRecordsRepository;
             DisplayName = "Activity Log";
         }
 
@@ -38,7 +39,7 @@
 
         #region Properties
 
-        public IEnumerable<UserActivityState> ActivityLog
+        public IEnumerable<ActivityRecord> ActivityLog
         {
             get
             {
@@ -59,7 +60,7 @@
         {
             base.OnViewLoaded(view);
 
-            foreach (var state in _stateRepository.GetStates())
+            foreach (var state in _activityRecordsRepository.GetActivityLog(DateTime.Now, TimeSpan.FromHours(4)))
             {
                 _states.Add(state);
             }
