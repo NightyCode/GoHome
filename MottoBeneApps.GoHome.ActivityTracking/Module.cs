@@ -57,7 +57,7 @@
                 return;
             }
 
-            UserActivityTracker.Stop(true);
+            UserActivityTracker.Stop();
         }
 
         #endregion

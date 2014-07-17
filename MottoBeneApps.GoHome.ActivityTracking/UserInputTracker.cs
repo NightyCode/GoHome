@@ -33,19 +33,44 @@ namespace MottoBeneApps.GoHome.ActivityTracking
         #endregion
 
 
+        #region Properties
+
+        public static bool IsTracking
+        {
+            get;
+            private set;
+        }
+
+        #endregion
+
+
         #region Public Methods
 
         public static void Start()
         {
+            if (IsTracking)
+            {
+                return;
+            }
+
             StartTrackingKeyboardEvents();
             StartTrackingMouseEvents();
+
+            IsTracking = true;
         }
 
 
         public static void Stop()
         {
+            if (!IsTracking)
+            {
+                return;
+            }
+
             StopTrackingKeyboardEvents();
             StopTrackingMouseEvents();
+
+            IsTracking = false;
         }
 
         #endregion

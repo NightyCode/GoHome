@@ -27,7 +27,6 @@
         private readonly ILog _log = LogManager.GetLog(typeof(UserActivityTracker));
         private DateTime _inputSequenceStartTime = DateTime.MinValue;
         private DateTime _lastUserInputTime = DateTime.MinValue;
-        private bool _systemShutDown;
 
         #endregion
 
@@ -46,49 +45,78 @@
         #endregion
 
 
+        #region Properties
+
+        public bool IsTracking
+        {
+            get;
+            private set;
+        }
+
+        #endregion
+
+
         #region Public Methods
 
         public void Start()
         {
-            _log.Info("User activity tracking started.");
+            lock (_syncRoot)
+            {
+                if (IsTracking)
+                {
+                    return;
+                }
 
-            SystemEvents.PowerModeChanged += OnPowerModeChanged;
-            SystemEvents.SessionSwitch += OnSessionSwitch;
-            SystemEvents.SessionEnding += OnSessionEnding;
-            SystemEvents.SessionEnded += OnSessionEnded;
+                _log.Info("User activity tracking started.");
 
-            UserInputTracker.UserInputDetected += OnUserInput;
-            UserInputTracker.Start();
+                SystemEvents.PowerModeChanged += OnPowerModeChanged;
+                SystemEvents.SessionSwitch += OnSessionSwitch;
+                SystemEvents.SessionEnded += OnSessionEnded;
+
+                UserInputTracker.UserInputDetected += OnUserInput;
+                UserInputTracker.Start();
+
+                IsTracking = true;
+            }
         }
 
 
-        public void Stop(bool applicationShutDown)
+        public void Stop()
         {
-            _log.Info("User activity tracking stopped.");
-
-            SystemEvents.PowerModeChanged -= OnPowerModeChanged;
-            SystemEvents.SessionSwitch -= OnSessionSwitch;
-            SystemEvents.SessionEnding -= OnSessionEnding;
-            SystemEvents.SessionEnded -= OnSessionEnded;
-
-            UserInputTracker.Stop();
-            UserInputTracker.UserInputDetected -= OnUserInput;
-
-            if (!applicationShutDown || _systemShutDown)
+            lock (_syncRoot)
             {
-                return;
+                if (!IsTracking)
+                {
+                    return;
+                }
+
+                _log.Info("User activity tracking stopped.");
+
+                SystemEvents.PowerModeChanged -= OnPowerModeChanged;
+                SystemEvents.SessionSwitch -= OnSessionSwitch;
+                SystemEvents.SessionEnded -= OnSessionEnded;
+
+                UserInputTracker.Stop();
+                UserInputTracker.UserInputDetected -= OnUserInput;
+
+                TimeSpan activeTime = _lastUserInputTime - _inputSequenceStartTime;
+
+                if (!(activeTime.TotalMilliseconds < Settings.Default.ActiveThreshold))
+                {
+                    _log.Info(
+                        "Added activity period on app shutdown: {0} to {1}.",
+                        _inputSequenceStartTime,
+                        _lastUserInputTime);
+
+                    _activityRecordsRepository.Add(
+                        new ActivityRecord(_inputSequenceStartTime, _lastUserInputTime, false));
+                }
+
+                _lastUserInputTime = DateTime.MinValue;
+                _inputSequenceStartTime = DateTime.MinValue;
+
+                IsTracking = false;
             }
-
-            // User has closed the app himself. Log the last activity record.
-            TimeSpan activeTime = _lastUserInputTime - _inputSequenceStartTime;
-
-            if (activeTime.TotalMilliseconds < Settings.Default.ActiveThreshold)
-            {
-                return;
-            }
-
-            _log.Info("Added activity period on app shutdown: {0} to {1}.", _inputSequenceStartTime, _lastUserInputTime);
-            _activityRecordsRepository.Add(new ActivityRecord(_inputSequenceStartTime, _lastUserInputTime, false));
         }
 
         #endregion
@@ -99,14 +127,6 @@
         private void OnPowerModeChanged(object sender, PowerModeChangedEventArgs e)
         {
             _log.Info("Power mode changed to '{0}'", e.Mode);
-
-            switch (e.Mode)
-            {
-                case PowerModes.Resume:
-                    break;
-                case PowerModes.Suspend:
-                    break;
-            }
         }
 
 
@@ -114,21 +134,7 @@
         {
             _log.Info("Session ended with reason: '{0}'", e.Reason);
 
-            _systemShutDown = true;
-        }
-
-
-        private void OnSessionEnding(object sender, SessionEndingEventArgs e)
-        {
-            _log.Info("Session ending with reason: '{0}'", e.Reason);
-
-            switch (e.Reason)
-            {
-                case SessionEndReasons.Logoff:
-                    break;
-                case SessionEndReasons.SystemShutdown:
-                    break;
-            }
+            Stop();
         }
 
 
@@ -139,12 +145,13 @@
             switch (e.Reason)
             {
                 case SessionSwitchReason.SessionLock:
-                    break;
                 case SessionSwitchReason.SessionLogoff:
+                    Stop();
                     break;
+
                 case SessionSwitchReason.SessionLogon:
-                    break;
                 case SessionSwitchReason.SessionUnlock:
+                    Start();
                     break;
             }
         }
