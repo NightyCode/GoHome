@@ -17,29 +17,6 @@
         #endregion
 
 
-        #region Constructors and Destructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:System.Object"/> class.
-        /// </summary>
-        public ActivityRecord()
-        {
-        }
-
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:System.Object"/> class.
-        /// </summary>
-        public ActivityRecord(DateTime startTime, DateTime endTime, bool idle)
-        {
-            StartTime = startTime;
-            EndTime = endTime;
-            Idle = idle;
-        }
-
-        #endregion
-
-
         #region Properties
 
         public virtual Activity Activity
@@ -49,6 +26,12 @@
         }
 
         public int? ActivityId
+        {
+            get;
+            private set;
+        }
+
+        public int ActivityRecordId
         {
             get;
             private set;
@@ -89,12 +72,6 @@
         {
             get;
             set;
-        }
-
-        public int ActivityRecordId
-        {
-            get;
-            private set;
         }
 
         public bool Idle

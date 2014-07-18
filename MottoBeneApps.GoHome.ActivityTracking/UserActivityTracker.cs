@@ -3,7 +3,9 @@
     #region Namespace Imports
 
     using System;
+    using System.Collections.Generic;
     using System.ComponentModel.Composition;
+    using System.Linq;
     using System.Threading.Tasks;
 
     using Caliburn.Micro;
@@ -24,6 +26,9 @@
         private static readonly object _syncRoot = new object();
 
         private readonly IActivityRecordsRepository _activityRecordsRepository;
+        private readonly Activity _defaultActivity;
+        private readonly Activity _defaultIdleActivity;
+        private readonly Activity _homeActivity;
         private readonly ILog _log = LogManager.GetLog(typeof(UserActivityTracker));
         private DateTime _inputSequenceStartTime = DateTime.MinValue;
         private DateTime _lastUserInputTime = DateTime.MinValue;
@@ -37,9 +42,16 @@
         /// Initializes a new instance of the <see cref="T:System.Object"/> class.
         /// </summary>
         [ImportingConstructor]
-        public UserActivityTracker(IActivityRecordsRepository activityRecordsRepository)
+        public UserActivityTracker(
+            IActivityRecordsRepository activityRecordsRepository,
+            IActivitiesRepository activitiesRepository)
         {
             _activityRecordsRepository = activityRecordsRepository;
+
+            List<Activity> activities = activitiesRepository.GetActivities().ToList();
+            _defaultActivity = activities[0];
+            _defaultIdleActivity = activities[1];
+            _homeActivity = activities[5];
         }
 
         #endregion
@@ -109,7 +121,13 @@
                         _lastUserInputTime);
 
                     _activityRecordsRepository.Add(
-                        new ActivityRecord(_inputSequenceStartTime, _lastUserInputTime, false));
+                        new ActivityRecord
+                        {
+                            StartTime = _inputSequenceStartTime,
+                            EndTime = _lastUserInputTime,
+                            Idle = false,
+                            Activity = _defaultActivity
+                        });
                 }
 
                 _lastUserInputTime = DateTime.MinValue;
@@ -175,7 +193,11 @@
                                 "Updated last idle activity period end time from {0} to {1}.",
                                 lastActivityRecord.EndTime,
                                 currentTime);
+
                             lastActivityRecord.EndTime = currentTime;
+
+                            SetIdleRecordActivity(lastActivityRecord);
+
                             _activityRecordsRepository.Update(lastActivityRecord);
                         }
                         else
@@ -184,8 +206,17 @@
                                 "Added idle activity period: {0} to {1}.",
                                 lastActivityRecord.EndTime,
                                 currentTime);
-                            _activityRecordsRepository.Add(
-                                new ActivityRecord(lastActivityRecord.EndTime, currentTime, true));
+
+                            var activityRecord = new ActivityRecord
+                            {
+                                StartTime = lastActivityRecord.EndTime,
+                                EndTime = currentTime,
+                                Idle = true
+                            };
+
+                            SetIdleRecordActivity(activityRecord);
+
+                            _activityRecordsRepository.Add(activityRecord);
                         }
                     }
 
@@ -204,11 +235,29 @@
                     if (activeTime.TotalMilliseconds > Settings.Default.ActiveThreshold)
                     {
                         _log.Info("Added activity period: {0} to {1}.", _inputSequenceStartTime, _lastUserInputTime);
+
                         _activityRecordsRepository.Add(
-                            new ActivityRecord(_inputSequenceStartTime, _lastUserInputTime, false));
+                            new ActivityRecord
+                            {
+                                StartTime = _inputSequenceStartTime,
+                                EndTime = _lastUserInputTime,
+                                Idle = false,
+                                Activity = _defaultActivity
+                            });
 
                         _log.Info("Added idle activity period: {0} to {1}.", _lastUserInputTime, currentTime);
-                        _activityRecordsRepository.Add(new ActivityRecord(_lastUserInputTime, currentTime, true));
+
+                        var idleActivityRecord = new ActivityRecord
+                        {
+                            StartTime = _lastUserInputTime,
+                            EndTime = currentTime,
+                            Idle = true,
+                            Activity = _defaultIdleActivity
+                        };
+
+                        SetIdleRecordActivity(idleActivityRecord);
+
+                        _activityRecordsRepository.Add(idleActivityRecord);
                     }
                     else
                     {
@@ -231,6 +280,17 @@
         private void OnUserInput(object sender, EventArgs eventArgs)
         {
             Task.Run(() => OnUserActivity());
+        }
+
+
+        private void SetIdleRecordActivity(ActivityRecord activityRecord)
+        {
+            if (activityRecord.StartTime.Date != activityRecord.EndTime.Date)
+            {
+                activityRecord.Activity = _homeActivity;
+            }
+
+            // TODO request activity from user.
         }
 
         #endregion
