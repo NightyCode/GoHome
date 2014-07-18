@@ -4,6 +4,7 @@
 
     using System.Collections.Generic;
     using System.ComponentModel.Composition;
+    using System.Data.Entity;
     using System.Linq;
 
     #endregion
@@ -16,8 +17,10 @@
 
         public IEnumerable<Activity> GetActivities()
         {
-            var entities = new UserActivityLogEntities();
-            return entities.Activities.ToList();
+            using (var entities = new UserActivityLogEntities())
+            {
+                return entities.Activities.Include(a => a.Parent).ToList();
+            }
         }
 
         #endregion

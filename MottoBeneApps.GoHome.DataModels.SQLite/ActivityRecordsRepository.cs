@@ -5,6 +5,7 @@
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.Composition;
+    using System.Data.Entity;
     using System.Linq;
 
     #endregion
@@ -17,43 +18,62 @@
 
         public void Add(ActivityRecord activityRecord)
         {
-            var entities = new UserActivityLogEntities();
-            entities.ActivityRecords.Add(activityRecord);
-            entities.SaveChanges();
+            using (var entities = new UserActivityLogEntities())
+            {
+                entities.ActivityRecords.Add(activityRecord);
+                entities.SaveChanges();
+            }
         }
 
 
         public IEnumerable<ActivityRecord> GetActivityLog(DateTime date)
         {
-            var entities = new UserActivityLogEntities();
-            return entities.ActivityRecords.Where(s => s.StartTime <= date || s.EndTime <= date).ToList();
+            using (var entities = new UserActivityLogEntities())
+            {
+                return
+                    entities.ActivityRecords.Include(r => r.Activity)
+                        .Where(s => s.StartTime <= date || s.EndTime <= date)
+                        .ToList();
+            }
         }
 
 
         public ActivityRecord GetLastRecord()
         {
-            var entities = new UserActivityLogEntities();
-            return entities.ActivityRecords.OrderByDescending(s => s.EndTime).Take(1).ToList().FirstOrDefault();
+            using (var entities = new UserActivityLogEntities())
+            {
+                return
+                    entities.ActivityRecords.Include(r => r.Activity)
+                        .OrderByDescending(s => s.EndTime)
+                        .Take(1)
+                        .ToList()
+                        .FirstOrDefault();
+            }
         }
 
 
         public IEnumerable<ActivityRecord> GetRecords()
         {
-            var entities = new UserActivityLogEntities();
-            return entities.ActivityRecords.ToList();
+            using (var entities = new UserActivityLogEntities())
+            {
+                return entities.ActivityRecords.Include(r => r.Activity).ToList();
+            }
         }
 
 
         public void Update(ActivityRecord activityRecord)
         {
-            var entities = new UserActivityLogEntities();
-            var existingState =
-                entities.ActivityRecords.Single(s => s.ActivityRecordId == activityRecord.ActivityRecordId);
-            existingState.StartTime = activityRecord.StartTime;
-            existingState.EndTime = activityRecord.EndTime;
-            existingState.Idle = activityRecord.Idle;
+            using (var entities = new UserActivityLogEntities())
+            {
+                var existingState =
+                    entities.ActivityRecords.Single(s => s.ActivityRecordId == activityRecord.ActivityRecordId);
 
-            entities.SaveChanges();
+                existingState.StartTime = activityRecord.StartTime;
+                existingState.EndTime = activityRecord.EndTime;
+                existingState.Idle = activityRecord.Idle;
+
+                entities.SaveChanges();
+            }
         }
 
         #endregion
