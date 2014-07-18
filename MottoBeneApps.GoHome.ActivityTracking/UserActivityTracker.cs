@@ -59,6 +59,15 @@
 
         #region Properties
 
+        public TimeSpan ActiveTime
+        {
+            get
+            {
+                return _lastUserInputTime - _inputSequenceStartTime;
+            }
+        }
+
+
         public bool IsTracking
         {
             get;
@@ -230,9 +239,7 @@
 
                 if (idleTime.TotalMilliseconds > Settings.Default.IdleThreshold)
                 {
-                    TimeSpan activeTime = _lastUserInputTime - _inputSequenceStartTime;
-
-                    if (activeTime.TotalMilliseconds > Settings.Default.ActiveThreshold)
+                    if (ActiveTime.TotalMilliseconds > Settings.Default.ActiveThreshold)
                     {
                         _log.Info("Added activity period: {0} to {1}.", _inputSequenceStartTime, _lastUserInputTime);
 
@@ -288,6 +295,10 @@
             if (activityRecord.StartTime.Date != activityRecord.EndTime.Date)
             {
                 activityRecord.Activity = _homeActivity;
+            }
+            else
+            {
+                activityRecord.Activity = _defaultIdleActivity;
             }
 
             // TODO request activity from user.

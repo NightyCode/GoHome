@@ -46,5 +46,17 @@ namespace MottoBeneApps.GoHome.ActivityTracking.Properties {
                 this["ActiveThreshold"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("480")]
+        public int WorkDayDuration {
+            get {
+                return ((int)(this["WorkDayDuration"]));
+            }
+            set {
+                this["WorkDayDuration"] = value;
+            }
+        }
     }
 }

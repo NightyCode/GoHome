@@ -7,6 +7,7 @@
     using System.ComponentModel.Composition;
     using System.Data.Entity;
     using System.Linq;
+    using System.Linq.Expressions;
 
     #endregion
 
@@ -20,6 +21,12 @@
         {
             using (var entities = new UserActivityLogEntities())
             {
+                if (activityRecord.Activity != null)
+                {
+                    activityRecord.Activity =
+                        entities.Activities.Single(a => a.ActivityId == activityRecord.Activity.ActivityId);
+                }
+
                 entities.ActivityRecords.Add(activityRecord);
                 entities.SaveChanges();
             }
@@ -30,10 +37,16 @@
         {
             using (var entities = new UserActivityLogEntities())
             {
-                return
-                    entities.ActivityRecords.Include(r => r.Activity)
-                        .Where(s => s.StartTime <= date || s.EndTime <= date)
-                        .ToList();
+                return GetActivityLog(entities, date).ToList();
+            }
+        }
+
+
+        public IEnumerable<ActivityRecord> GetActivityLog(DateTime date, Expression<Func<ActivityRecord, bool>> filter)
+        {
+            using (var entities = new UserActivityLogEntities())
+            {
+                return GetActivityLog(entities, date).Where(filter).ToList();
             }
         }
 
@@ -61,6 +74,18 @@
         }
 
 
+        public TimeSpan GetRemainingWorkTime(TimeSpan workDayDuration)
+        {
+            using (var entities = new UserActivityLogEntities())
+            {
+                IEnumerable<ActivityRecord> activityLog =
+                    GetActivityLog(entities, DateTime.Now).Where(r => r.Activity.IsWork);
+                long duration = activityLog.Sum(r => r.DurationTicks);
+                return workDayDuration - TimeSpan.FromTicks(duration);
+            }
+        }
+
+
         public void Update(ActivityRecord activityRecord)
         {
             using (var entities = new UserActivityLogEntities())
@@ -72,8 +97,25 @@
                 existingState.EndTime = activityRecord.EndTime;
                 existingState.Idle = activityRecord.Idle;
 
+                if (activityRecord.Activity != null)
+                {
+                    existingState.Activity =
+                        entities.Activities.Single(a => a.ActivityId == activityRecord.Activity.ActivityId);
+                }
+
                 entities.SaveChanges();
             }
+        }
+
+        #endregion
+
+
+        #region Methods
+
+        private static IQueryable<ActivityRecord> GetActivityLog(UserActivityLogEntities entities, DateTime date)
+        {
+            return entities.ActivityRecords.Include(r => r.Activity)
+                .Where(s => s.StartTime <= date || s.EndTime <= date);
         }
 
         #endregion
