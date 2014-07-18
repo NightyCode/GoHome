@@ -4,7 +4,7 @@
     {
         #region Properties
 
-        public int Id
+        public int ActivityId
         {
             get;
             private set;
@@ -20,6 +20,18 @@
         {
             get;
             set;
+        }
+
+        public virtual Activity Parent
+        {
+            get;
+            set;
+        }
+
+        public int? ParentActivityId
+        {
+            get;
+            private set;
         }
 
         #endregion

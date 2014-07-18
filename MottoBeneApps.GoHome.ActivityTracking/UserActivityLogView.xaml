@@ -11,6 +11,7 @@
             <DataGridTextColumn Binding="{Binding StartTime, Mode=OneWay, StringFormat=\{0:G\}}" Header="Start Time" />
             <DataGridTextColumn Binding="{Binding EndTime, Mode=OneWay, StringFormat=\{0:G\}}" Header="End Time" />
             <DataGridTextColumn Binding="{Binding Duration, Mode=OneWay}" Header="Duration" />
+            <DataGridTextColumn Binding="{Binding Activity.Name, Mode=OneWay}" Header="Activity" />
             <DataGridCheckBoxColumn Binding="{Binding Idle, Mode=OneWay}" Header="Idle" />
         </DataGrid.Columns>
     </DataGrid>
