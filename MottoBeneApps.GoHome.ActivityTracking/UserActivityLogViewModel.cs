@@ -60,6 +60,8 @@
         {
             base.OnViewLoaded(view);
 
+            _states.Clear();
+
             foreach (var state in _activityRecordsRepository.GetActivityLog(DateTime.Now))
             {
                 _states.Add(state);
