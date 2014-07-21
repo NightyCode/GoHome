@@ -114,8 +114,10 @@
 
         private static IQueryable<ActivityRecord> GetActivityLog(UserActivityLogEntities entities, DateTime date)
         {
+            date = date.Date;
+
             return entities.ActivityRecords.Include(r => r.Activity)
-                .Where(s => s.StartTime <= date || s.EndTime <= date);
+                .Where(s => s.StartTime >= date || s.EndTime >= date);
         }
 
         #endregion
