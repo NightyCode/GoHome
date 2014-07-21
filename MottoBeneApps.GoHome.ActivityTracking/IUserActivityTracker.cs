@@ -16,6 +16,11 @@ namespace MottoBeneApps.GoHome.ActivityTracking
             get;
         }
 
+        TimeSpan IdleTime
+        {
+            get;
+        }
+
         bool IsTracking
         {
             get;
@@ -28,6 +33,7 @@ namespace MottoBeneApps.GoHome.ActivityTracking
 
         void Start();
         void Stop();
+        void UpdateUaserActivityLog();
 
         #endregion
     }

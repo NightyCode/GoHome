@@ -20,6 +20,7 @@
         #region Constants and Fields
 
         private readonly IActivityRecordsRepository _activityRecordsRepository;
+        private readonly IUserActivityTracker _activityTracker;
         private readonly ObservableCollection<ActivityRecord> _states = new ObservableCollection<ActivityRecord>();
 
         #endregion
@@ -28,9 +29,12 @@
         #region Constructors and Destructors
 
         [ImportingConstructor]
-        public UserActivityLogViewModel(IActivityRecordsRepository activityRecordsRepository)
+        public UserActivityLogViewModel(
+            IActivityRecordsRepository activityRecordsRepository,
+            IUserActivityTracker activityTracker)
         {
             _activityRecordsRepository = activityRecordsRepository;
+            _activityTracker = activityTracker;
             DisplayName = "Activity Log";
         }
 
@@ -59,6 +63,8 @@
         protected override void OnViewLoaded(object view)
         {
             base.OnViewLoaded(view);
+
+            _activityTracker.UpdateUaserActivityLog();
 
             _states.Clear();
 
