@@ -72,8 +72,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IActivityTrackingSettings.cs" />
     <Compile Include="IUserActivityLog.cs" />
     <Compile Include="IUserActivityTracker.cs" />
+    <Compile Include="IUserInputTracker.cs" />
     <Compile Include="Module.cs" />
     <Compile Include="NativeMethods.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -82,11 +84,13 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="SettingsViewModel.cs" />
     <Compile Include="UserActivityLogView.xaml.cs">
       <DependentUpon>UserActivityLogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserActivityLogViewModel.cs" />
     <Compile Include="UserActivityTracker.cs" />
+    <Compile Include="UserInputEventArgs.cs" />
     <Compile Include="UserInputTracker.cs" />
   </ItemGroup>
   <ItemGroup>

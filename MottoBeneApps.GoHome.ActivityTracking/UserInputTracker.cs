@@ -4,21 +4,25 @@ namespace MottoBeneApps.GoHome.ActivityTracking
 
     using System;
     using System.ComponentModel;
+    using System.ComponentModel.Composition;
     using System.Runtime.InteropServices;
+    using System.Threading.Tasks;
 
     #endregion
 
 
-    internal static class UserInputTracker
+    [Export(typeof(IUserInputTracker))]
+    [PartCreationPolicy(CreationPolicy.Shared)]
+    internal sealed class UserInputTracker : IUserInputTracker
     {
         #region Constants and Fields
 
         private const int _keyboardHookId = 13;
         private const int _mouseHookId = 14;
-        private static HookCallback _keyboardEventCallback;
-        private static int _keyboardHookHandle;
-        private static HookCallback _mouseEventCallback;
-        private static int _mouseHookHandle;
+        private HookCallback _keyboardEventCallback;
+        private int _keyboardHookHandle;
+        private HookCallback _mouseEventCallback;
+        private int _mouseHookHandle;
 
         #endregion
 
@@ -28,14 +32,14 @@ namespace MottoBeneApps.GoHome.ActivityTracking
         /// <summary>
         /// Occurs when a keyboard input is registered.
         /// </summary>
-        public static event EventHandler UserInputDetected;
+        public event EventHandler<UserInputEventArgs> UserInputDetected;
 
         #endregion
 
 
         #region Properties
 
-        public static bool IsTracking
+        public bool IsTracking
         {
             get;
             private set;
@@ -46,7 +50,7 @@ namespace MottoBeneApps.GoHome.ActivityTracking
 
         #region Public Methods
 
-        public static void Start()
+        public void Start()
         {
             if (IsTracking)
             {
@@ -60,7 +64,7 @@ namespace MottoBeneApps.GoHome.ActivityTracking
         }
 
 
-        public static void Stop()
+        public void Stop()
         {
             if (!IsTracking)
             {
@@ -78,29 +82,37 @@ namespace MottoBeneApps.GoHome.ActivityTracking
 
         #region Methods
 
-        private static int OnKeyboardInputEvent(int nCode, Int32 wParam, IntPtr lParam)
+        private int OnKeyboardInputEvent(int nCode, Int32 wParam, IntPtr lParam)
         {
-            if (UserInputDetected != null)
-            {
-                UserInputDetected(null, EventArgs.Empty);
-            }
+            OnUserInputDetected();
 
             return NativeMethods.CallNextHookEx(_keyboardHookHandle, nCode, wParam, lParam);
         }
 
 
-        private static int OnMouseInputEvent(int nCode, int wParam, IntPtr lParam)
+        private int OnMouseInputEvent(int nCode, int wParam, IntPtr lParam)
         {
-            if (UserInputDetected != null)
-            {
-                UserInputDetected(null, EventArgs.Empty);
-            }
+            OnUserInputDetected();
 
             return NativeMethods.CallNextHookEx(_mouseHookHandle, nCode, wParam, lParam);
         }
 
 
-        private static void StartTrackingKeyboardEvents()
+        private void OnUserInputDetected()
+        {
+            EventHandler<UserInputEventArgs> onUserInputDetected = UserInputDetected;
+
+            if (onUserInputDetected == null)
+            {
+                return;
+            }
+
+            var eventArgs = new UserInputEventArgs();
+            Task.Run(() => onUserInputDetected(null, eventArgs));
+        }
+
+
+        private void StartTrackingKeyboardEvents()
         {
             if (_keyboardHookHandle != 0)
             {
@@ -124,7 +136,7 @@ namespace MottoBeneApps.GoHome.ActivityTracking
         }
 
 
-        private static void StartTrackingMouseEvents()
+        private void StartTrackingMouseEvents()
         {
             if (_mouseHookHandle != 0)
             {
@@ -144,7 +156,7 @@ namespace MottoBeneApps.GoHome.ActivityTracking
         }
 
 
-        private static void StopTrackingKeyboardEvents()
+        private void StopTrackingKeyboardEvents()
         {
             if (_keyboardHookHandle == 0)
             {
@@ -165,7 +177,7 @@ namespace MottoBeneApps.GoHome.ActivityTracking
         }
 
 
-        private static void StopTrackingMouseEvents()
+        private void StopTrackingMouseEvents()
         {
             if (_mouseHookHandle == 0)
             {

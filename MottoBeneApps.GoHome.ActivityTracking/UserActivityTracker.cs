@@ -6,20 +6,18 @@
     using System.Collections.Generic;
     using System.ComponentModel.Composition;
     using System.Linq;
-    using System.Threading.Tasks;
 
     using Caliburn.Micro;
 
     using Microsoft.Win32;
 
-    using MottoBeneApps.GoHome.ActivityTracking.Properties;
     using MottoBeneApps.GoHome.DataModels;
 
     #endregion
 
 
     [Export(typeof(IUserActivityTracker))]
-    internal sealed class UserActivityTracker : IUserActivityTracker
+    public sealed class UserActivityTracker : IUserActivityTracker
     {
         #region Constants and Fields
 
@@ -30,7 +28,9 @@
         private readonly Activity _defaultActivity;
         private readonly Activity _defaultIdleActivity;
         private readonly Activity _homeActivity;
+        private readonly IUserInputTracker _inputTracker;
         private readonly ILog _log = LogManager.GetLog(typeof(UserActivityTracker));
+        private readonly IActivityTrackingSettings _settings;
         private DateTime _lastUserInputTime = DateTime.MinValue;
         private DateTime _userInputStartTime = DateTime.MinValue;
 
@@ -45,9 +45,13 @@
         [ImportingConstructor]
         public UserActivityTracker(
             IActivityRecordsRepository activityRecordsRepository,
-            IActivitiesRepository activitiesRepository)
+            IActivitiesRepository activitiesRepository,
+            IActivityTrackingSettings settings,
+            IUserInputTracker inputTracker)
         {
             _activityRecordsRepository = activityRecordsRepository;
+            _settings = settings;
+            _inputTracker = inputTracker;
 
             List<Activity> activities = activitiesRepository.GetActivities().ToList();
             _defaultActivity = activities[0];
@@ -103,8 +107,8 @@
                 SystemEvents.SessionSwitch += OnSessionSwitch;
                 SystemEvents.SessionEnded += OnSessionEnded;
 
-                UserInputTracker.UserInputDetected += OnUserInput;
-                UserInputTracker.Start();
+                _inputTracker.UserInputDetected += OnUserInput;
+                _inputTracker.Start();
 
                 IsTracking = true;
             }
@@ -126,10 +130,10 @@
                 SystemEvents.SessionSwitch -= OnSessionSwitch;
                 SystemEvents.SessionEnded -= OnSessionEnded;
 
-                UserInputTracker.Stop();
-                UserInputTracker.UserInputDetected -= OnUserInput;
+                _inputTracker.Stop();
+                _inputTracker.UserInputDetected -= OnUserInput;
 
-                LogUserActivity(false, true);
+                LogUserActivity(false, true, DateTime.Now);
 
                 _lastUserInputTime = DateTime.MinValue;
                 _userInputStartTime = DateTime.MinValue;
@@ -141,7 +145,7 @@
 
         public void UpdateUaserActivityLog()
         {
-            LogUserActivity(false, true);
+            LogUserActivity(false, true, DateTime.Now);
         }
 
         #endregion
@@ -156,43 +160,71 @@
             DateTime userInputStartTime,
             DateTime lastUserInputTime,
             DateTime currentTime,
-            ILog log)
+            IActivityTrackingSettings settings)
         {
             var activeTime = lastUserInputTime - userInputStartTime;
             var idleTime = currentTime - lastUserInputTime;
 
             ActivityRecord lastRecord = activityRecordsRepository.GetLastRecord();
 
-            TimeSpan timeSpan = userInputStartTime - lastRecord.EndTime;
-
-            if (!lastRecord.Idle && timeSpan.TotalMilliseconds > 1
-                && timeSpan.TotalMilliseconds < Settings.Default.IdleThreshold)
+            if (lastRecord != null)
             {
-                log.Info(
-                    "The time between last activity record and current user activity start time is too small. Treating it as user activity time.");
-                userInputStartTime = lastRecord.StartTime;
-                activeTime = lastUserInputTime - lastRecord.StartTime;
+                TimeSpan idleTimeAfterLastRecord = userInputStartTime - lastRecord.EndTime;
+
+                if (lastRecord.Idle)
+                {
+                    // Cannot log this yet. Not enough data.
+                    if (activeTime < settings.MinimumActivityDuration && idleTime < settings.MinimumIdleDuration)
+                    {
+                        return;
+                    }
+
+                    if (activeTime < settings.MinimumActivityDuration)
+                    {
+                        lastRecord.EndTime = currentTime;
+                        setIdleRecordActivity(lastRecord);
+                        activityRecordsRepository.Update(lastRecord);
+
+                        return;
+                    }
+
+                    if (idleTimeAfterLastRecord.TotalMilliseconds > 0)
+                    {
+                        lastRecord.EndTime = userInputStartTime;
+                        setIdleRecordActivity(lastRecord);
+                        activityRecordsRepository.Update(lastRecord);
+                    }
+                }
+                else
+                {
+                    if (idleTimeAfterLastRecord >= settings.MinimumIdleDuration)
+                    {
+                        var newIdleRecord = new ActivityRecord
+                        {
+                            StartTime = lastRecord.EndTime,
+                            EndTime = userInputStartTime,
+                            Idle = true,
+                        };
+
+                        setIdleRecordActivity(newIdleRecord);
+                        activityRecordsRepository.Add(newIdleRecord);
+                    }
+                    else
+                    {
+                        lastRecord.EndTime = lastUserInputTime;
+                        activityRecordsRepository.Update(lastRecord);
+                        activeTime = TimeSpan.Zero;
+                    }
+                }
             }
 
-            if (activeTime.TotalMilliseconds < Settings.Default.ActiveThreshold)
+            if (activeTime < settings.MinimumActivityDuration && idleTime < settings.MinimumIdleDuration)
             {
-                log.Info("The registered active time is too small. Nothing to log yet.");
                 return;
             }
 
-            if (lastRecord.Idle)
+            if (activeTime >= settings.MinimumActivityDuration)
             {
-                if (lastRecord.EndTime != userInputStartTime)
-                {
-                    log.Info("Updating last idle record with new end time ({0}).", userInputStartTime);
-                    lastRecord.EndTime = userInputStartTime;
-
-                    setIdleRecordActivity(lastRecord);
-
-                    activityRecordsRepository.Update(lastRecord);
-                }
-
-                log.Info("Adding new activity record ({0} - {1}).", userInputStartTime, lastUserInputTime);
                 activityRecordsRepository.Add(
                     new ActivityRecord
                     {
@@ -202,21 +234,17 @@
                         Activity = defaultActivity
                     });
             }
-            else
+            else if (activeTime != TimeSpan.Zero)
             {
-                log.Info("Updating last activity record with new end time ({0}).", lastUserInputTime);
-                lastRecord.EndTime = lastUserInputTime;
-
-                activityRecordsRepository.Update(lastRecord);
+                idleTime += activeTime;
+                lastUserInputTime = userInputStartTime;
             }
 
-            if (idleTime.TotalMilliseconds < Settings.Default.IdleThreshold)
+            if (idleTime < settings.MinimumIdleDuration)
             {
-                log.Info("Idle time is too small. Cannot log it yet.");
                 return;
             }
 
-            log.Info("Adding new idle record ({0} - {1}).", lastUserInputTime, currentTime);
             var idleRecord = new ActivityRecord
             {
                 StartTime = lastUserInputTime,
@@ -231,18 +259,29 @@
         }
 
 
-        private void LogUserActivity(bool updateActivityTimeStamps, bool forceLog)
+        private void LogUserActivity(bool updateActivityTimeStamps, bool forceLog, DateTime currentTime)
         {
             lock (_activityLoggingSyncRoot)
             {
-                DateTime currentTime;
                 DateTime lastUserInputTime;
                 DateTime userInputStartTime;
                 TimeSpan idleTime;
 
                 lock (_activityTrackingSyncRoot)
                 {
-                    currentTime = DateTime.Now;
+                    lastUserInputTime = _lastUserInputTime;
+                    userInputStartTime = _userInputStartTime;
+
+                    if (_lastUserInputTime == DateTime.MinValue)
+                    {
+                        idleTime = TimeSpan.Zero;
+                    }
+                    else
+                    {
+                        idleTime = currentTime - _lastUserInputTime;
+                    }
+
+                    bool longIdleTime = idleTime >= _settings.MinimumIdleDuration;
 
                     if (updateActivityTimeStamps)
                     {
@@ -251,32 +290,37 @@
                             _lastUserInputTime = currentTime;
                             _userInputStartTime = currentTime;
                         }
+                        else if (longIdleTime)
+                        {
+                            _lastUserInputTime = currentTime;
+                            _userInputStartTime = currentTime;
+                        }
                         else
                         {
                             _lastUserInputTime = currentTime;
+                            lastUserInputTime = currentTime;
+                            idleTime = TimeSpan.Zero;
                         }
                     }
 
-                    lastUserInputTime = _lastUserInputTime;
-                    userInputStartTime = _userInputStartTime;
-                    idleTime = currentTime - lastUserInputTime;
-
-                    if (updateActivityTimeStamps && idleTime.TotalMilliseconds >= Settings.Default.IdleThreshold)
+                    if (longIdleTime)
                     {
-                        _log.Info("The user was idle for too long. Resetting activity time stamps.");
+                        forceLog = true;
 
-                        _lastUserInputTime = currentTime;
-                        _userInputStartTime = currentTime;
+                        if (!updateActivityTimeStamps)
+                        {
+                            _lastUserInputTime = DateTime.MinValue;
+                            _userInputStartTime = DateTime.MinValue;
+                        }
                     }
                 }
 
                 if (lastUserInputTime == DateTime.MinValue)
                 {
-                    _log.Info("No user activity registered since app start. Nothing to log yet.");
                     return;
                 }
 
-                if (!forceLog && idleTime.TotalMilliseconds < Settings.Default.IdleThreshold)
+                if (!forceLog && idleTime < _settings.MinimumIdleDuration)
                 {
                     return;
                 }
@@ -288,7 +332,7 @@
                     userInputStartTime,
                     lastUserInputTime,
                     currentTime,
-                    _log);
+                    _settings);
             }
         }
 
@@ -314,12 +358,12 @@
             switch (e.Reason)
             {
                 case SessionSwitchReason.SessionLock:
-                    UserInputTracker.Stop();
-                    LogUserActivity(false, true);
+                    _inputTracker.Stop();
+                    LogUserActivity(false, true, DateTime.Now);
                     break;
 
                 case SessionSwitchReason.SessionUnlock:
-                    UserInputTracker.Start();
+                    _inputTracker.Start();
                     break;
 
                 case SessionSwitchReason.SessionLogoff:
@@ -333,9 +377,9 @@
         }
 
 
-        private void OnUserInput(object sender, EventArgs eventArgs)
+        private void OnUserInput(object sender, UserInputEventArgs eventArgs)
         {
-            Task.Run(() => LogUserActivity(true, false));
+            LogUserActivity(true, false, eventArgs.TimeStamp);
         }
 
 

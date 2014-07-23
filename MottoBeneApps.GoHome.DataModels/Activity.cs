@@ -2,6 +2,27 @@
 {
     public class Activity
     {
+        #region Constructors and Destructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:System.Object"/> class.
+        /// </summary>
+        public Activity()
+        {
+        }
+
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:System.Object"/> class.
+        /// </summary>
+        public Activity(int activityId)
+        {
+            ActivityId = activityId;
+        }
+
+        #endregion
+
+
         #region Properties
 
         public int ActivityId

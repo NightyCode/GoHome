@@ -17,6 +17,27 @@
         #endregion
 
 
+        #region Constructors and Destructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:System.Object"/> class.
+        /// </summary>
+        public ActivityRecord()
+        {
+        }
+
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:System.Object"/> class.
+        /// </summary>
+        public ActivityRecord(int activityRecordId)
+        {
+            ActivityRecordId = activityRecordId;
+        }
+
+        #endregion
+
+
         #region Properties
 
         public virtual Activity Activity
