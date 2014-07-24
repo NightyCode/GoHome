@@ -108,7 +108,7 @@ namespace MottoBeneApps.GoHome.ActivityTracking
             }
 
             var eventArgs = new UserInputEventArgs();
-            Task.Run(() => onUserInputDetected(null, eventArgs));
+            Task.Run(() => onUserInputDetected(this, eventArgs));
         }
 
 
