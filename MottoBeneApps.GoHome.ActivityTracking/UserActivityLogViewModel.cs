@@ -64,7 +64,7 @@
         {
             base.OnViewLoaded(view);
 
-            _activityTracker.UpdateUaserActivityLog();
+            _activityTracker.UpdateUserActivityLog();
 
             _states.Clear();
 

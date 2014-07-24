@@ -33,7 +33,7 @@ namespace MottoBeneApps.GoHome.ActivityTracking
 
         void Start();
         void Stop();
-        void UpdateUaserActivityLog();
+        void UpdateUserActivityLog();
 
         #endregion
     }

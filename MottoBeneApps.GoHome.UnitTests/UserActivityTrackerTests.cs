@@ -60,6 +60,113 @@
         #region Public Methods
 
         [TestMethod]
+        public void TestActivityThenForceLogThenIdleThenActivityThenIdleLoggingInEmptyLog()
+        {
+            // | Activity, Force Log, Idle, Activity, Idle
+            var settings = GetActivityTrackingSettingsFake();
+            var activitiesRepository = GetActivitiesRepositoryFake();
+            var userInputTracker = GetUserInputTrackerFake();
+
+            var records = new List<ActivityRecord>();
+            var activityRecordsRepository = GetActivityRecordsRepositoryFake(records);
+
+            var tracker = new UserActivityTracker(
+                activityRecordsRepository,
+                activitiesRepository,
+                settings,
+                userInputTracker);
+
+            tracker.Start();
+
+            DateTime timeStamp = DateTime.Now;
+            userInputTracker.RaiseUserInputDetectedEvent(timeStamp);
+            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.MinimumActivityDuration);
+
+            tracker.LogUserActivity(false, true, timeStamp);
+
+            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.MinimumIdleDuration);
+            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.MinimumActivityDuration);
+            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.MinimumIdleDuration);
+
+            records.Should().HaveCount(4);
+
+            ActivityRecord activityRecord = records[0];
+            activityRecord.Idle.Should().Be(false);
+            activityRecord.Duration.Should().Be(settings.MinimumActivityDuration);
+            activityRecord.Activity.Should().Be(WorkActivity);
+
+            ActivityRecord idleRecord = records[1];
+            idleRecord.Idle.Should().Be(true);
+            idleRecord.Duration.Should().Be(settings.MinimumIdleDuration);
+            idleRecord.Activity.Should().Be(BreakActivity);
+            idleRecord.StartTime.Should().Be(activityRecord.EndTime);
+
+            activityRecord = records[2];
+            activityRecord.Idle.Should().Be(false);
+            activityRecord.Duration.Should().Be(settings.MinimumActivityDuration);
+            activityRecord.Activity.Should().Be(WorkActivity);
+            activityRecord.StartTime.Should().Be(idleRecord.EndTime);
+
+            idleRecord = records[3];
+            idleRecord.Idle.Should().Be(true);
+            idleRecord.Duration.Should().Be(settings.MinimumIdleDuration);
+            idleRecord.Activity.Should().Be(BreakActivity);
+            idleRecord.StartTime.Should().Be(activityRecord.EndTime);
+
+            tracker.Stop();
+        }
+
+
+        [TestMethod]
+        public void TestActivityThenForceLogThenShortIdleThenActivityThenIdleLoggingInEmptyLog()
+        {
+            // | Activity, Force Log, Short Idle, Activity, Idle
+            var settings = GetActivityTrackingSettingsFake();
+            var activitiesRepository = GetActivitiesRepositoryFake();
+            var userInputTracker = GetUserInputTrackerFake();
+
+            var records = new List<ActivityRecord>();
+            var activityRecordsRepository = GetActivityRecordsRepositoryFake(records);
+
+            var tracker = new UserActivityTracker(
+                activityRecordsRepository,
+                activitiesRepository,
+                settings,
+                userInputTracker);
+
+            tracker.Start();
+
+            DateTime timeStamp = DateTime.Now;
+            userInputTracker.RaiseUserInputDetectedEvent(timeStamp);
+            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.MinimumActivityDuration);
+
+            tracker.LogUserActivity(false, true, timeStamp);
+
+            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.GetShortIdleDuration());
+            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.MinimumActivityDuration);
+            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.MinimumIdleDuration);
+
+            records.Should().HaveCount(2);
+
+            ActivityRecord activityRecord = records[0];
+            activityRecord.Idle.Should().Be(false);
+            activityRecord.Duration.Should()
+                .Be(
+                    settings.MinimumActivityDuration + settings.GetShortIdleDuration()
+                    + settings.MinimumActivityDuration);
+            activityRecord.Activity.Should().Be(WorkActivity);
+
+            ActivityRecord idleRecord = records[1];
+            idleRecord.Idle.Should().Be(true);
+            idleRecord.Duration.Should().Be(settings.MinimumIdleDuration);
+            idleRecord.Activity.Should().Be(BreakActivity);
+            idleRecord.StartTime.Should().Be(activityRecord.EndTime);
+
+            tracker.Stop();
+        }
+
+
+        [TestMethod]
         public void TestActivityThenIdleLoggingInEmptyLog()
         {
             // | Activity, Idle
@@ -202,6 +309,50 @@
 
 
         [TestMethod]
+        public void TestForceLogThenActivityThenIdleLoggingInEmptyLog()
+        {
+            // | Activity, Idle
+            var settings = GetActivityTrackingSettingsFake();
+            var activitiesRepository = GetActivitiesRepositoryFake();
+            var userInputTracker = GetUserInputTrackerFake();
+
+            var records = new List<ActivityRecord>();
+            var activityRecordsRepository = GetActivityRecordsRepositoryFake(records);
+
+            var tracker = new UserActivityTracker(
+                activityRecordsRepository,
+                activitiesRepository,
+                settings,
+                userInputTracker);
+
+            tracker.Start();
+
+            DateTime timeStamp = DateTime.Now;
+
+            tracker.LogUserActivity(false, true, timeStamp);
+
+            userInputTracker.RaiseUserInputDetectedEvent(timeStamp);
+            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.MinimumActivityDuration);
+            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.MinimumIdleDuration);
+
+            records.Should().HaveCount(2);
+
+            ActivityRecord activityRecord = records[0];
+            activityRecord.Idle.Should().Be(false);
+            activityRecord.Duration.Should().Be(settings.MinimumActivityDuration);
+            activityRecord.Activity.Should().Be(WorkActivity);
+
+            ActivityRecord idleRecord = records[1];
+            idleRecord.Idle.Should().Be(true);
+            idleRecord.Duration.Should().Be(settings.MinimumIdleDuration);
+            idleRecord.Activity.Should().Be(BreakActivity);
+            idleRecord.StartTime.Should().Be(activityRecord.EndTime);
+
+            tracker.Stop();
+        }
+
+
+        [TestMethod]
         public void TestIdleThenActivityThenIdleLoggingWithLastRecordIndicatingActivityInLog()
         {
             // Activity | Idle, Activity, Idle
@@ -260,9 +411,280 @@
 
 
         [TestMethod]
+        public void TestRestartLoggingThenActivityThenIdleLoggingInEmptyLog()
+        {
+            // | Activity, Idle
+            var settings = GetActivityTrackingSettingsFake();
+            var activitiesRepository = GetActivitiesRepositoryFake();
+            var userInputTracker = GetUserInputTrackerFake();
+
+            var records = new List<ActivityRecord>();
+            var activityRecordsRepository = GetActivityRecordsRepositoryFake(records);
+
+            var tracker = new UserActivityTracker(
+                activityRecordsRepository,
+                activitiesRepository,
+                settings,
+                userInputTracker);
+
+            tracker.Start();
+            tracker.Stop();
+            tracker.Start();
+
+            DateTime timeStamp = DateTime.Now;
+            userInputTracker.RaiseUserInputDetectedEvent(timeStamp);
+            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.MinimumActivityDuration);
+            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.MinimumIdleDuration);
+
+            records.Should().HaveCount(2);
+
+            ActivityRecord activityRecord = records[0];
+            activityRecord.Idle.Should().Be(false);
+            activityRecord.Duration.Should().Be(settings.MinimumActivityDuration);
+            activityRecord.Activity.Should().Be(WorkActivity);
+
+            ActivityRecord idleRecord = records[1];
+            idleRecord.Idle.Should().Be(true);
+            idleRecord.Duration.Should().Be(settings.MinimumIdleDuration);
+            idleRecord.Activity.Should().Be(BreakActivity);
+            idleRecord.StartTime.Should().Be(activityRecord.EndTime);
+
+            tracker.Stop();
+        }
+
+
+        [TestMethod]
+        public void TestShortActivityThenForceLogThenActivityThenIdleLoggingInEmptyLog()
+        {
+            // | Activity, Idle
+            var settings = GetActivityTrackingSettingsFake();
+            var activitiesRepository = GetActivitiesRepositoryFake();
+            var userInputTracker = GetUserInputTrackerFake();
+
+            var records = new List<ActivityRecord>();
+            var activityRecordsRepository = GetActivityRecordsRepositoryFake(records);
+
+            var tracker = new UserActivityTracker(
+                activityRecordsRepository,
+                activitiesRepository,
+                settings,
+                userInputTracker);
+
+            tracker.Start();
+
+            DateTime timeStamp = DateTime.Now;
+
+            userInputTracker.RaiseUserInputDetectedEvent(timeStamp);
+            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.GetShortActivityDuration());
+
+            tracker.LogUserActivity(false, true, timeStamp);
+
+            userInputTracker.RaiseUserInputDetectedEvent(timeStamp);
+            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.MinimumActivityDuration);
+            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.MinimumIdleDuration);
+
+            records.Should().HaveCount(2);
+
+            ActivityRecord activityRecord = records[0];
+            activityRecord.Idle.Should().Be(false);
+            activityRecord.Duration.Should().Be(settings.MinimumActivityDuration + settings.GetShortActivityDuration());
+            activityRecord.Activity.Should().Be(WorkActivity);
+
+            ActivityRecord idleRecord = records[1];
+            idleRecord.Idle.Should().Be(true);
+            idleRecord.Duration.Should().Be(settings.MinimumIdleDuration);
+            idleRecord.Activity.Should().Be(BreakActivity);
+            idleRecord.StartTime.Should().Be(activityRecord.EndTime);
+
+            tracker.Stop();
+        }
+
+
+        [TestMethod]
+        public void TestShortActivityThenForceLogThenShortActivityThenForceLogThenActivityThenIdleLoggingInEmptyLog()
+        {
+            // | Short Activity, Force Log, Short activity, Force Log, Activity, Idle
+            var settings = GetActivityTrackingSettingsFake();
+            var activitiesRepository = GetActivitiesRepositoryFake();
+            var userInputTracker = GetUserInputTrackerFake();
+
+            var records = new List<ActivityRecord>();
+            var activityRecordsRepository = GetActivityRecordsRepositoryFake(records);
+
+            var tracker = new UserActivityTracker(
+                activityRecordsRepository,
+                activitiesRepository,
+                settings,
+                userInputTracker);
+
+            tracker.Start();
+
+            DateTime timeStamp = DateTime.Now;
+
+            userInputTracker.RaiseUserInputDetectedEvent(timeStamp);
+            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.GetShortActivityDuration());
+
+            tracker.LogUserActivity(false, true, timeStamp);
+
+            userInputTracker.RaiseUserInputDetectedEvent(timeStamp);
+            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.GetShortActivityDuration());
+            tracker.LogUserActivity(false, true, timeStamp);
+
+            userInputTracker.RaiseUserInputDetectedEvent(timeStamp);
+            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.MinimumActivityDuration);
+            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.MinimumIdleDuration);
+
+            records.Should().HaveCount(2);
+
+            ActivityRecord activityRecord = records[0];
+            activityRecord.Idle.Should().Be(false);
+            activityRecord.Duration.Should()
+                .Be(
+                    settings.MinimumActivityDuration + settings.GetShortActivityDuration()
+                    + settings.GetShortActivityDuration());
+            activityRecord.Activity.Should().Be(WorkActivity);
+
+            ActivityRecord idleRecord = records[1];
+            idleRecord.Idle.Should().Be(true);
+            idleRecord.Duration.Should().Be(settings.MinimumIdleDuration);
+            idleRecord.Activity.Should().Be(BreakActivity);
+            idleRecord.StartTime.Should().Be(activityRecord.EndTime);
+
+            tracker.Stop();
+        }
+
+
+        [TestMethod]
+        public void TestShortActivityThenIdleLoggingInEmptyLog()
+        {
+            // | Short Activity, Idle
+            var settings = GetActivityTrackingSettingsFake();
+            var activitiesRepository = GetActivitiesRepositoryFake();
+            var userInputTracker = GetUserInputTrackerFake();
+
+            var records = new List<ActivityRecord>();
+            var activityRecordsRepository = GetActivityRecordsRepositoryFake(records);
+
+            var tracker = new UserActivityTracker(
+                activityRecordsRepository,
+                activitiesRepository,
+                settings,
+                userInputTracker);
+
+            tracker.Start();
+
+            DateTime timeStamp = DateTime.Now;
+            userInputTracker.RaiseUserInputDetectedEvent(timeStamp);
+            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.GetShortActivityDuration());
+            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.MinimumIdleDuration);
+
+            records.Should().HaveCount(1);
+
+            ActivityRecord idleRecord = records[0];
+            idleRecord.Idle.Should().Be(true);
+            idleRecord.Duration.Should().Be(settings.MinimumIdleDuration + settings.GetShortActivityDuration());
+            idleRecord.Activity.Should().Be(BreakActivity);
+
+            tracker.Stop();
+        }
+
+
+        [TestMethod]
+        public void TestShortActivityThenIdleLoggingWithLastRecordIndicatingActivityInLog()
+        {
+            // Activity | Short Activity, Idle
+            var settings = GetActivityTrackingSettingsFake();
+            var activitiesRepository = GetActivitiesRepositoryFake();
+            var userInputTracker = GetUserInputTrackerFake();
+
+            var records = new List<ActivityRecord>();
+            var activityRecordsRepository = GetActivityRecordsRepositoryFake(records);
+
+            var tracker = new UserActivityTracker(
+                activityRecordsRepository,
+                activitiesRepository,
+                settings,
+                userInputTracker);
+
+            tracker.Start();
+
+            DateTime timeStamp = DateTime.Now;
+            records.Add(
+                new ActivityRecord(1)
+                {
+                    Activity = WorkActivity,
+                    Idle = false,
+                    StartTime = timeStamp - settings.MinimumActivityDuration,
+                    EndTime = timeStamp
+                });
+
+            userInputTracker.RaiseUserInputDetectedEvent(timeStamp);
+            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.GetShortActivityDuration());
+            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.MinimumIdleDuration);
+
+            records.Should().HaveCount(2);
+
+            ActivityRecord record = records[0];
+            record.Idle.Should().Be(false);
+            record.Duration.Should().Be(settings.MinimumActivityDuration + settings.GetShortActivityDuration());
+
+            record = records[1];
+            record.Idle.Should().Be(true);
+            record.Duration.Should().Be(settings.MinimumIdleDuration);
+            record.StartTime.Should().Be(records[0].EndTime);
+
+            tracker.Stop();
+        }
+
+
+        [TestMethod]
+        public void TestShortActivityThenIdleWithLastRecordIndicatingInactivityInLog()
+        {
+            // Idle | Short Activity, Idle
+            var settings = GetActivityTrackingSettingsFake();
+            var activitiesRepository = GetActivitiesRepositoryFake();
+            var userInputTracker = GetUserInputTrackerFake();
+
+            var records = new List<ActivityRecord>();
+            var activityRecordsRepository = GetActivityRecordsRepositoryFake(records);
+
+            var tracker = new UserActivityTracker(
+                activityRecordsRepository,
+                activitiesRepository,
+                settings,
+                userInputTracker);
+
+            tracker.Start();
+
+            DateTime timeStamp = DateTime.Now;
+            records.Add(
+                new ActivityRecord(1)
+                {
+                    Activity = BreakActivity,
+                    Idle = true,
+                    StartTime = timeStamp - settings.MinimumIdleDuration,
+                    EndTime = timeStamp
+                });
+
+            userInputTracker.RaiseUserInputDetectedEvent(timeStamp);
+            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.GetShortActivityDuration());
+            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.MinimumIdleDuration);
+
+            records.Should().HaveCount(1);
+
+            ActivityRecord idleRecord = records[0];
+            idleRecord.Idle.Should().Be(true);
+            idleRecord.Duration.Should()
+                .Be(settings.MinimumIdleDuration + settings.GetShortActivityDuration() + settings.MinimumIdleDuration);
+
+            tracker.Stop();
+        }
+
+
+        [TestMethod]
         public void TestShortIdleThenActivityThenIdleLoggingWithLastRecordIndicatingActivityInLog()
         {
-            // Activity | Small Idle, Activity, Idle
+            // Activity | Short Idle, Activity, Idle
             var settings = GetActivityTrackingSettingsFake();
             var activitiesRepository = GetActivitiesRepositoryFake();
             var userInputTracker = GetUserInputTrackerFake();
@@ -313,7 +735,7 @@
         [TestMethod]
         public void TestShortIdleThenActivityThenIdleLoggingWithLastRecordIndicatingInactivityInLog()
         {
-            // Idle | Small Idle, Activity, Idle
+            // Idle | Short Idle, Activity, Idle
             var settings = GetActivityTrackingSettingsFake();
             var activitiesRepository = GetActivitiesRepositoryFake();
             var userInputTracker = GetUserInputTrackerFake();
@@ -366,7 +788,7 @@
         [TestMethod]
         public void TestShortIdleThenShortActivityThenIdleLoggingWithLastRecordIndicatingActivityInLog()
         {
-            // Activity | Small Idle, Small Activity, Idle
+            // Activity | Short Idle, Short Activity, Idle
             var settings = GetActivityTrackingSettingsFake();
             var activitiesRepository = GetActivitiesRepositoryFake();
             var userInputTracker = GetUserInputTrackerFake();
@@ -417,7 +839,7 @@
         [TestMethod]
         public void TestShortIdleThenShortActivityThenIdleLoggingWithLastRecordIndicatingInactivityInLog()
         {
-            // Idle | Small Idle, Small Activity, Idle
+            // Idle | Short Idle, Short Activity, Idle
             var settings = GetActivityTrackingSettingsFake();
             var activitiesRepository = GetActivitiesRepositoryFake();
             var userInputTracker = GetUserInputTrackerFake();
@@ -455,133 +877,6 @@
                 .Be(
                     settings.MinimumIdleDuration + settings.GetShortIdleDuration() + settings.GetShortActivityDuration()
                     + settings.MinimumIdleDuration);
-
-            tracker.Stop();
-        }
-
-
-        [TestMethod]
-        public void TestSmallActivityThenIdleLoggingInEmptyLog()
-        {
-            // | Small Activity, Idle
-            var settings = GetActivityTrackingSettingsFake();
-            var activitiesRepository = GetActivitiesRepositoryFake();
-            var userInputTracker = GetUserInputTrackerFake();
-
-            var records = new List<ActivityRecord>();
-            var activityRecordsRepository = GetActivityRecordsRepositoryFake(records);
-
-            var tracker = new UserActivityTracker(
-                activityRecordsRepository,
-                activitiesRepository,
-                settings,
-                userInputTracker);
-
-            tracker.Start();
-
-            DateTime timeStamp = DateTime.Now;
-            userInputTracker.RaiseUserInputDetectedEvent(timeStamp);
-            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.GetShortActivityDuration());
-            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.MinimumIdleDuration);
-
-            records.Should().HaveCount(1);
-
-            ActivityRecord idleRecord = records[0];
-            idleRecord.Idle.Should().Be(true);
-            idleRecord.Duration.Should().Be(settings.MinimumIdleDuration + settings.GetShortActivityDuration());
-            idleRecord.Activity.Should().Be(BreakActivity);
-
-            tracker.Stop();
-        }
-
-
-        [TestMethod]
-        public void TestSmallActivityThenIdleLoggingWithLastRecordIndicatingActivityInLog()
-        {
-            // Activity | Small Activity, Idle
-            var settings = GetActivityTrackingSettingsFake();
-            var activitiesRepository = GetActivitiesRepositoryFake();
-            var userInputTracker = GetUserInputTrackerFake();
-
-            var records = new List<ActivityRecord>();
-            var activityRecordsRepository = GetActivityRecordsRepositoryFake(records);
-
-            var tracker = new UserActivityTracker(
-                activityRecordsRepository,
-                activitiesRepository,
-                settings,
-                userInputTracker);
-
-            tracker.Start();
-
-            DateTime timeStamp = DateTime.Now;
-            records.Add(
-                new ActivityRecord(1)
-                {
-                    Activity = WorkActivity,
-                    Idle = false,
-                    StartTime = timeStamp - settings.MinimumActivityDuration,
-                    EndTime = timeStamp
-                });
-
-            userInputTracker.RaiseUserInputDetectedEvent(timeStamp);
-            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.GetShortActivityDuration());
-            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.MinimumIdleDuration);
-
-            records.Should().HaveCount(2);
-
-            ActivityRecord record = records[0];
-            record.Idle.Should().Be(false);
-            record.Duration.Should().Be(settings.MinimumActivityDuration + settings.GetShortActivityDuration());
-
-            record = records[1];
-            record.Idle.Should().Be(true);
-            record.Duration.Should().Be(settings.MinimumIdleDuration);
-            record.StartTime.Should().Be(records[0].EndTime);
-
-            tracker.Stop();
-        }
-
-
-        [TestMethod]
-        public void TestSmallActivityThenIdleWithLastRecordIndicatingInactivityInLog()
-        {
-            // Idle | Small Activity, Idle
-            var settings = GetActivityTrackingSettingsFake();
-            var activitiesRepository = GetActivitiesRepositoryFake();
-            var userInputTracker = GetUserInputTrackerFake();
-
-            var records = new List<ActivityRecord>();
-            var activityRecordsRepository = GetActivityRecordsRepositoryFake(records);
-
-            var tracker = new UserActivityTracker(
-                activityRecordsRepository,
-                activitiesRepository,
-                settings,
-                userInputTracker);
-
-            tracker.Start();
-
-            DateTime timeStamp = DateTime.Now;
-            records.Add(
-                new ActivityRecord(1)
-                {
-                    Activity = BreakActivity,
-                    Idle = true,
-                    StartTime = timeStamp - settings.MinimumIdleDuration,
-                    EndTime = timeStamp
-                });
-
-            userInputTracker.RaiseUserInputDetectedEvent(timeStamp);
-            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.GetShortActivityDuration());
-            userInputTracker.RaiseUserInputDetectedEvent(ref timeStamp, settings.MinimumIdleDuration);
-
-            records.Should().HaveCount(1);
-
-            ActivityRecord idleRecord = records[0];
-            idleRecord.Idle.Should().Be(true);
-            idleRecord.Duration.Should()
-                .Be(settings.MinimumIdleDuration + settings.GetShortActivityDuration() + settings.MinimumIdleDuration);
 
             tracker.Stop();
         }

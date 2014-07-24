@@ -143,7 +143,7 @@
         }
 
 
-        public void UpdateUaserActivityLog()
+        public void UpdateUserActivityLog()
         {
             LogUserActivity(false, true, DateTime.Now);
         }
@@ -152,6 +152,84 @@
 
 
         #region Methods
+
+        internal void LogUserActivity(bool updateActivityTimeStamps, bool forceLog, DateTime currentTime)
+        {
+            lock (_activityLoggingSyncRoot)
+            {
+                DateTime lastUserInputTime;
+                DateTime userInputStartTime;
+                TimeSpan idleTime;
+
+                lock (_activityTrackingSyncRoot)
+                {
+                    lastUserInputTime = _lastUserInputTime;
+                    userInputStartTime = _userInputStartTime;
+
+                    if (_lastUserInputTime == DateTime.MinValue)
+                    {
+                        idleTime = TimeSpan.Zero;
+                    }
+                    else
+                    {
+                        idleTime = currentTime - _lastUserInputTime;
+                    }
+
+                    bool longIdleTime = idleTime >= _settings.MinimumIdleDuration;
+
+                    if (updateActivityTimeStamps)
+                    {
+                        if (_lastUserInputTime == DateTime.MinValue)
+                        {
+                            _lastUserInputTime = currentTime;
+                            _userInputStartTime = currentTime;
+                        }
+                        else if (longIdleTime)
+                        {
+                            _lastUserInputTime = currentTime;
+                            _userInputStartTime = currentTime;
+                        }
+                        else
+                        {
+                            _lastUserInputTime = currentTime;
+                            lastUserInputTime = currentTime;
+                            idleTime = TimeSpan.Zero;
+                        }
+                    }
+
+                    if (longIdleTime)
+                    {
+                        forceLog = true;
+
+                        if (!updateActivityTimeStamps)
+                        {
+                            _lastUserInputTime = DateTime.MinValue;
+                            _userInputStartTime = DateTime.MinValue;
+                        }
+                    }
+                }
+
+                if (lastUserInputTime == DateTime.MinValue)
+                {
+                    return;
+                }
+
+                if (!forceLog && idleTime < _settings.MinimumIdleDuration)
+                {
+                    return;
+                }
+
+                LogUserActivity(
+                    _activityRecordsRepository,
+                    SetIdleRecordActivity,
+                    _defaultActivity,
+                    userInputStartTime,
+                    lastUserInputTime,
+                    currentTime,
+                    _settings);
+            }
+        }
+
 
         private static void LogUserActivity(
             IActivityRecordsRepository activityRecordsRepository,
@@ -256,84 +334,6 @@
             setIdleRecordActivity(idleRecord);
 
             activityRecordsRepository.Add(idleRecord);
-        }
-
-
-        private void LogUserActivity(bool updateActivityTimeStamps, bool forceLog, DateTime currentTime)
-        {
-            lock (_activityLoggingSyncRoot)
-            {
-                DateTime lastUserInputTime;
-                DateTime userInputStartTime;
-                TimeSpan idleTime;
-
-                lock (_activityTrackingSyncRoot)
-                {
-                    lastUserInputTime = _lastUserInputTime;
-                    userInputStartTime = _userInputStartTime;
-
-                    if (_lastUserInputTime == DateTime.MinValue)
-                    {
-                        idleTime = TimeSpan.Zero;
-                    }
-                    else
-                    {
-                        idleTime = currentTime - _lastUserInputTime;
-                    }
-
-                    bool longIdleTime = idleTime >= _settings.MinimumIdleDuration;
-
-                    if (updateActivityTimeStamps)
-                    {
-                        if (_lastUserInputTime == DateTime.MinValue)
-                        {
-                            _lastUserInputTime = currentTime;
-                            _userInputStartTime = currentTime;
-                        }
-                        else if (longIdleTime)
-                        {
-                            _lastUserInputTime = currentTime;
-                            _userInputStartTime = currentTime;
-                        }
-                        else
-                        {
-                            _lastUserInputTime = currentTime;
-                            lastUserInputTime = currentTime;
-                            idleTime = TimeSpan.Zero;
-                        }
-                    }
-
-                    if (longIdleTime)
-                    {
-                        forceLog = true;
-
-                        if (!updateActivityTimeStamps)
-                        {
-                            _lastUserInputTime = DateTime.MinValue;
-                            _userInputStartTime = DateTime.MinValue;
-                        }
-                    }
-                }
-
-                if (lastUserInputTime == DateTime.MinValue)
-                {
-                    return;
-                }
-
-                if (!forceLog && idleTime < _settings.MinimumIdleDuration)
-                {
-                    return;
-                }
-
-                LogUserActivity(
-                    _activityRecordsRepository,
-                    SetIdleRecordActivity,
-                    _defaultActivity,
-                    userInputStartTime,
-                    lastUserInputTime,
-                    currentTime,
-                    _settings);
-            }
         }
 
 
