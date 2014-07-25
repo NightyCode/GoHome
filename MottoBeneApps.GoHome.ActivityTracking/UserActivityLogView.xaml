@@ -8,11 +8,10 @@
              d:DataContext="{d:DesignData /SampleData/UserActivityViewModelSampleData.xaml}">
     <DataGrid ItemsSource="{Binding ActivityLog}" AutoGenerateColumns="False">
         <DataGrid.Columns>
-            <DataGridTextColumn Binding="{Binding StartTime, Mode=OneWay, StringFormat=\{0:G\}}" Header="Start Time" />
-            <DataGridTextColumn Binding="{Binding EndTime, Mode=OneWay, StringFormat=\{0:G\}}" Header="End Time" />
-            <DataGridTextColumn Binding="{Binding Duration, Mode=OneWay}" Header="Duration" />
+            <DataGridTextColumn Binding="{Binding StartTime, Mode=OneWay, StringFormat=\{0:t\}}" Header="Start Time" />
+            <DataGridTextColumn Binding="{Binding EndTime, Mode=OneWay, StringFormat=\{0:t\}}" Header="End Time" />
+            <DataGridTextColumn Binding="{Binding Duration, Mode=OneWay, StringFormat=\{0:hh\\:mm\\:ss\}}" Header="Duration" />
             <DataGridTextColumn Binding="{Binding Activity.Name, Mode=OneWay}" Header="Activity" />
-            <DataGridCheckBoxColumn Binding="{Binding Idle, Mode=OneWay}" Header="Idle" />
         </DataGrid.Columns>
     </DataGrid>
 </UserControl>

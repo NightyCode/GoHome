@@ -33,6 +33,9 @@
     <Reference Include="Caliburn.Micro">
       <HintPath>..\packages\Caliburn.Micro.1.5.2\lib\net45\Caliburn.Micro.dll</HintPath>
     </Reference>
+    <Reference Include="De.TorstenMandelkow.MetroChart">
+      <HintPath>..\Libraries\MetroChart\De.TorstenMandelkow.MetroChart.dll</HintPath>
+    </Reference>
     <Reference Include="Gemini">
       <HintPath>..\packages\GeminiWpf.0.5.0\lib\net40\Gemini.dll</HintPath>
     </Reference>
@@ -80,15 +83,22 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActivityLogViewModel.cs" />
     <Compile Include="ActivityTrackingSettingsView.xaml.cs">
       <DependentUpon>ActivityTrackingSettingsView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DashboardView.xaml.cs">
+      <DependentUpon>DashboardView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="DashboardViewModel.cs" />
     <Compile Include="IActivityTrackingSettings.cs" />
+    <Compile Include="IDashboard.cs" />
     <Compile Include="IUserActivityLog.cs" />
     <Compile Include="IUserActivityTracker.cs" />
     <Compile Include="IUserInputTracker.cs" />
     <Compile Include="Module.cs" />
     <Compile Include="NativeMethods.cs" />
+    <Compile Include="MinutesToTimeSpanConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -124,6 +134,10 @@
       </SubType>
     </DesignData>
     <Page Include="ActivityTrackingSettingsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="DashboardView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

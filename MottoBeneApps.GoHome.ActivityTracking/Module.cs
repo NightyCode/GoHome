@@ -5,6 +5,7 @@
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.Composition;
+    using System.Linq;
     using System.Threading.Tasks;
     using System.Timers;
     using System.Windows;
@@ -52,7 +53,10 @@
 
             UserActivityTracker.Start();
 
-            MainMenu.Find(KnownMenuItemNames.View).Add(new MenuItem("Activity Log", OpenActivityLogView));
+            MainMenu.Find(KnownMenuItemNames.View)
+                .Add(new MenuItem("Dashboard", OnOpenDashboardMenuItemClick, CanOpenDashboard));
+
+            MainMenu.Find(KnownMenuItemNames.View).Add(new MenuItem("Activity Log", OnOpenActivityLogMenuItemClick));
 
             var shell = IoC.Get<IShell>() as IDeactivate;
 
@@ -68,6 +72,12 @@
 
 
         #region Methods
+
+        private bool CanOpenDashboard()
+        {
+            return !IoC.Get<IShell>().Documents.Any(d => d is IDashboard);
+        }
+
 
         private void CheckRemainingWorkTime()
         {
@@ -96,6 +106,18 @@
         }
 
 
+        private IEnumerable<IResult> OnOpenActivityLogMenuItemClick()
+        {
+            yield return Show.Document<IUserActivityLog>();
+        }
+
+
+        private IEnumerable<IResult> OnOpenDashboardMenuItemClick()
+        {
+            yield return Show.Document<IDashboard>();
+        }
+
+
         private void OnShellDeactivated(object sender, DeactivationEventArgs e)
         {
             if (!e.WasClosed)
@@ -110,12 +132,6 @@
         private void OnWorkDayEndTimerElapsed(object sender, ElapsedEventArgs elapsedEventArgs)
         {
             CheckRemainingWorkTime();
-        }
-
-
-        private IEnumerable<IResult> OpenActivityLogView()
-        {
-            yield return Show.Document<IUserActivityLog>();
         }
 
         #endregion
