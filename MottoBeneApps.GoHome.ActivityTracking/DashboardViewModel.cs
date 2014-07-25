@@ -4,11 +4,14 @@
 
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.ComponentModel.Composition;
     using System.Linq;
+    using System.Windows;
 
     using Gemini.Framework;
 
+    using MottoBeneApps.GoHome.ActivityTracking.Properties;
     using MottoBeneApps.GoHome.DataModels;
 
     #endregion
@@ -22,12 +25,13 @@
         private readonly IActivityRecordsRepository _activityRecordsRepository;
         private readonly IUserActivityTracker _activityTracker;
         private readonly IActivityTrackingSettings _settings;
+        private IEnumerable<IActivityChartPiece> _gaugeChartPieces;
         private IEnumerable<IActivityChartPiece> _pieChartPieces;
 
         private IActivityChartPiece _selectedActivity;
+        private Window _window;
         private DateTime _workdayEndTime;
         private DateTime _workdayStartTime;
-        private IEnumerable<IActivityChartPiece> _gaugeChartPieces;
 
         #endregion
 
@@ -168,6 +172,39 @@
         #region Methods
 
         /// <summary>
+        /// Called when activating.
+        /// </summary>
+        protected override void OnActivate()
+        {
+            base.OnActivate();
+
+            RefreshData();
+        }
+
+
+        /// <summary>
+        /// Called when deactivating.
+        /// </summary>
+        /// <param name="close">Inidicates whether this instance will be closed.</param>
+        protected override void OnDeactivate(bool close)
+        {
+            base.OnDeactivate(close);
+
+            if (!close)
+            {
+                return;
+            }
+
+            if (_window != null)
+            {
+                _window.StateChanged -= OnWindowStateChanged;
+            }
+
+            Settings.Default.PropertyChanged -= OnSettingsPropertyChanged;
+        }
+
+
+        /// <summary>
         /// Called when an attached view's Loaded event fires.
         /// </summary>
         /// <param name="view"/>
@@ -175,7 +212,31 @@
         {
             base.OnViewLoaded(view);
 
+            _window = Window.GetWindow((DependencyObject)view);
+
+            if (_window != null)
+            {
+                _window.StateChanged += OnWindowStateChanged;
+            }
+
+            Settings.Default.PropertyChanged += OnSettingsPropertyChanged;
+
             RefreshData();
+        }
+
+
+        private void OnSettingsPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
+        {
+            RefreshData();
+        }
+
+
+        private void OnWindowStateChanged(object sender, EventArgs e)
+        {
+            if (_window.WindowState != WindowState.Minimized)
+            {
+                RefreshData();
+            }
         }
 
 
@@ -187,6 +248,7 @@
             var workRecords = records.Where(r => r.Activity.IsWork).ToList();
 
             TimeSpan remainingTime = _settings.WorkDayDuration;
+            TimeSpan extraTime = TimeSpan.Zero;
             TimeSpan workdayDuration = TimeSpan.Zero;
 
             var chartPieces = new List<IActivityChartPiece>();
@@ -199,7 +261,16 @@
             {
                 var workdayDurationTicks = workRecords.Sum(r => r.DurationTicks);
                 workdayDuration = TimeSpan.FromTicks(workdayDurationTicks);
-                remainingTime = _settings.WorkDayDuration - workdayDuration;
+
+                if (workdayDuration < _settings.WorkDayDuration)
+                {
+                    remainingTime = _settings.WorkDayDuration - workdayDuration;
+                }
+                else
+                {
+                    remainingTime = TimeSpan.Zero;
+                    extraTime = workdayDuration - _settings.WorkDayDuration;
+                }
 
                 WorkdayStartTime = workRecords.Min(r => r.StartTime);
                 WorkdayEndTime = DateTime.Now + remainingTime;
@@ -209,26 +280,27 @@
                 foreach (var activityRecords in recordsByActivity)
                 {
                     chartPieces.Add(
-                        new ActivityRecordsLogChartPiece(
-                            activityRecords.Key,
-                            activityRecords.ToList(),
-                            _settings.WorkDayDuration.TotalMinutes));
+                        new ActivityRecordsLogChartPiece(activityRecords.Key, activityRecords.ToList(), workdayDuration));
                 }
             }
 
             var gaugeChartPieces = chartPieces.ToList();
 
-            gaugeChartPieces.Insert(0, new ActivityChartPiece(
-                "Total work time",
-                (int)Math.Round(workdayDuration.TotalMinutes),
-                _settings.WorkDayDuration.TotalMinutes));
+            gaugeChartPieces.Insert(
+                0,
+                new ActivityChartPiece("Total work time", workdayDuration, _settings.WorkDayDuration));
 
             GaugeChartPieces = gaugeChartPieces;
 
-            chartPieces.Add(new ActivityChartPiece(
-                "Remaining time",
-                (int)Math.Round(remainingTime.TotalMinutes),
-                _settings.WorkDayDuration.TotalMinutes));
+            if (remainingTime.TotalMinutes > 0)
+            {
+                chartPieces.Add(new ActivityChartPiece("Remaining time", remainingTime, _settings.WorkDayDuration));
+            }
+
+            if (extraTime.TotalMinutes > 0)
+            {
+                chartPieces.Add(new ActivityChartPiece("Extra time", extraTime, _settings.WorkDayDuration));
+            }
 
             PieChartPieces = chartPieces;
         }

@@ -30,7 +30,7 @@
         public ActivityRecordsLogChartPiece(
             Activity activity,
             IEnumerable<ActivityRecord> records,
-            double workdayDuration)
+            TimeSpan workdayDuration)
         {
             _activity = activity;
             Records = records.ToList();
@@ -41,7 +41,8 @@
             }
 
             TotalDuration = (int)Math.Round(TimeSpan.FromTicks(Records.Sum(r => r.DurationTicks)).TotalMinutes);
-            WorkdayPercent = (int)(TotalDuration / (workdayDuration / 100d));
+            var totalWorkdayMinutes = (int)Math.Round(workdayDuration.TotalMinutes);
+            WorkdayPercent = (int)(TotalDuration / (totalWorkdayMinutes / 100d));
         }
 
         #endregion

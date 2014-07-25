@@ -151,6 +151,81 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+
+            <Style x:Key="RadialGaugeChartPlotterAreaStyle" TargetType="metroChart:PlotterArea">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="metroChart:PlotterArea">
+                            <metroChart:FadingListView Style="{StaticResource FadingListViewStyle}"
+                                                       ItemsSource="{Binding Path=ParentChart.DataPointGroups, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+                                <metroChart:FadingListView.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Grid />
+                                    </ItemsPanelTemplate>
+                                </metroChart:FadingListView.ItemsPanel>
+                                <metroChart:FadingListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="auto" />
+                                                <RowDefinition Height="*" />
+                                            </Grid.RowDefinitions>
+                                            <Border Grid.Row="0"
+                                                    Visibility="{Binding Path=ShowCaption, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                <TextBlock Text="{Binding Path=Caption}"
+                                                           Style="{StaticResource SeriesTitleStyle}" />
+                                            </Border>
+                                            <metroChart:FadingListView Style="{StaticResource FadingListViewStyle}"
+                                                                       x:Name="itemsControl"
+                                                                       ItemsSource="{Binding Path=DataPoints}"
+                                                                       Margin="5"
+                                                                       Grid.Row="1">
+                                                <metroChart:FadingListView.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <!--<StackPanel Orientation="Horizontal" />-->
+                                                        <metroChart:UniformGridPanel Orientation="Horizontal"
+                                                                                     MinimalGridWidth="150.0" />
+                                                    </ItemsPanelTemplate>
+                                                </metroChart:FadingListView.ItemsPanel>
+                                                <metroChart:FadingListView.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid>
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="*" />
+                                                                <RowDefinition Height="auto" />
+                                                            </Grid.RowDefinitions>
+                                                            <metroChart:RadialGaugePiece
+                                                                Grid.Row="0"
+                                                                Margin="5"
+                                                                Background="{Binding Path=ItemBrush}"
+                                                                SelectedBrush="{Binding Path=SelectedBrush}"
+                                                                Value="{Binding Path=Value}"
+                                                                IsClickedByUser="{Binding Path=IsClickedByUser, Mode=TwoWay}"
+                                                                IsSelected="{Binding Path=IsSelected}"
+                                                                ClientWidth="180"
+                                                                ClientHeight="180"
+                                                                x:Name="radial" />
+                                                            <Border Grid.Row="1" HorizontalAlignment="Center"
+                                                                    Margin="0 0 0 10">
+                                                                <TextBlock Text="{Binding Path=SeriesCaption}" />
+                                                            </Border>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </metroChart:FadingListView.ItemTemplate>
+                                            </metroChart:FadingListView>
+                                        </Grid>
+                                    </DataTemplate>
+                                </metroChart:FadingListView.ItemTemplate>
+                            </metroChart:FadingListView>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style TargetType="metroChart:RadialGaugeChart" BasedOn="{StaticResource BaseChartStyle}">
+                <Setter Property="ChartAreaStyle" Value="{StaticResource RadialGaugeChartChartAreaStyle}" />
+                <Setter Property="PlotterAreaStyle" Value="{StaticResource RadialGaugeChartPlotterAreaStyle}" />
+            </Style>
         </ResourceDictionary>
 
     </UserControl.Resources>
@@ -184,7 +259,7 @@
 
             <DataGrid Grid.Row="2" Grid.Column="0" ItemsSource="{Binding SelectedActivity.Records}"
                       AutoGenerateColumns="False"
-                      Visibility="{Binding SelectedActivity.HasRecords, Converter={StaticResource BooleanToVisibilityConverter}}"
+                      IsEnabled="{Binding SelectedActivity.HasRecords}"
                       MinHeight="300">
                 <DataGrid.Columns>
                     <DataGridTextColumn Binding="{Binding StartTime, Mode=OneWay, StringFormat=\{0:t\}}"
