@@ -22,10 +22,12 @@
         private readonly IActivityRecordsRepository _activityRecordsRepository;
         private readonly IUserActivityTracker _activityTracker;
         private readonly IActivityTrackingSettings _settings;
-        private IEnumerable<ActivityLogViewModel> _activities;
-        private ActivityLogViewModel _selectedActivity;
+        private IEnumerable<IActivityChartPiece> _pieChartPieces;
+
+        private IActivityChartPiece _selectedActivity;
         private DateTime _workdayEndTime;
         private DateTime _workdayStartTime;
+        private IEnumerable<IActivityChartPiece> _gaugeChartPieces;
 
         #endregion
 
@@ -50,27 +52,48 @@
 
         #region Properties
 
-        public IEnumerable<ActivityLogViewModel> Activities
+        public IEnumerable<IActivityChartPiece> GaugeChartPieces
         {
             get
             {
-                return _activities;
+                return _gaugeChartPieces;
             }
 
             private set
             {
-                if (Equals(value, _activities))
+                if (Equals(value, _gaugeChartPieces))
                 {
                     return;
                 }
 
-                _activities = value;
+                _gaugeChartPieces = value;
 
-                NotifyOfPropertyChange(() => Activities);
+                NotifyOfPropertyChange(() => GaugeChartPieces);
             }
         }
 
-        public ActivityLogViewModel SelectedActivity
+        public IEnumerable<IActivityChartPiece> PieChartPieces
+        {
+            get
+            {
+                return _pieChartPieces;
+            }
+
+
+            private set
+            {
+                if (Equals(value, _pieChartPieces))
+                {
+                    return;
+                }
+
+                _pieChartPieces = value;
+
+                NotifyOfPropertyChange(() => PieChartPieces);
+            }
+        }
+
+        public IActivityChartPiece SelectedActivity
         {
             get
             {
@@ -160,12 +183,13 @@
         {
             _activityTracker.UpdateUserActivityLog();
 
-            var activities = new List<ActivityLogViewModel>();
-
             List<ActivityRecord> records = _activityRecordsRepository.GetActivityLog(DateTime.Now).ToList();
             var workRecords = records.Where(r => r.Activity.IsWork).ToList();
 
             TimeSpan remainingTime = _settings.WorkDayDuration;
+            TimeSpan workdayDuration = TimeSpan.Zero;
+
+            var chartPieces = new List<IActivityChartPiece>();
 
             if (workRecords.Count == 0)
             {
@@ -174,28 +198,39 @@
             else
             {
                 var workdayDurationTicks = workRecords.Sum(r => r.DurationTicks);
-                var workdayDuration = TimeSpan.FromTicks(workdayDurationTicks);
+                workdayDuration = TimeSpan.FromTicks(workdayDurationTicks);
                 remainingTime = _settings.WorkDayDuration - workdayDuration;
 
                 WorkdayStartTime = workRecords.Min(r => r.StartTime);
                 WorkdayEndTime = DateTime.Now + remainingTime;
 
-                foreach (var activityRecords in records.GroupBy(r => r.Activity))
+                var recordsByActivity = workRecords.GroupBy(r => r.Activity).ToList();
+
+                foreach (var activityRecords in recordsByActivity)
                 {
-                    string activityName = "Undefined";
-
-                    if (activityRecords.Key != null)
-                    {
-                        activityName = activityRecords.Key.Name;
-                    }
-
-                    activities.Add(new ActivityLogViewModel(activityName, activityRecords.ToList()));
+                    chartPieces.Add(
+                        new ActivityRecordsLogChartPiece(
+                            activityRecords.Key,
+                            activityRecords.ToList(),
+                            _settings.WorkDayDuration.TotalMinutes));
                 }
             }
 
-            activities.Add(new ActivityLogViewModel("Remaining time", (int)Math.Round(remainingTime.TotalMinutes)));
+            var gaugeChartPieces = chartPieces.ToList();
 
-            Activities = activities;
+            gaugeChartPieces.Insert(0, new ActivityChartPiece(
+                "Total work time",
+                (int)Math.Round(workdayDuration.TotalMinutes),
+                _settings.WorkDayDuration.TotalMinutes));
+
+            GaugeChartPieces = gaugeChartPieces;
+
+            chartPieces.Add(new ActivityChartPiece(
+                "Remaining time",
+                (int)Math.Round(remainingTime.TotalMinutes),
+                _settings.WorkDayDuration.TotalMinutes));
+
+            PieChartPieces = chartPieces;
         }
 
         #endregion

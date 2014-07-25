@@ -83,14 +83,16 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ActivityLogViewModel.cs" />
+    <Compile Include="ActivityRecordsLogChartPiece.cs" />
     <Compile Include="ActivityTrackingSettingsView.xaml.cs">
       <DependentUpon>ActivityTrackingSettingsView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ActivityChartPiece.cs" />
     <Compile Include="DashboardView.xaml.cs">
       <DependentUpon>DashboardView.xaml</DependentUpon>
     </Compile>
     <Compile Include="DashboardViewModel.cs" />
+    <Compile Include="IActivityChartPiece.cs" />
     <Compile Include="IActivityTrackingSettings.cs" />
     <Compile Include="IDashboard.cs" />
     <Compile Include="IUserActivityLog.cs" />

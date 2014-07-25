@@ -9,7 +9,8 @@
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="500"
              d:DataContext="{d:DesignInstance activityTracking:DashboardViewModel}"
-             Background="White">
+             Background="White"
+             x:Name="Dashboard">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -42,8 +43,7 @@
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
 
-                                    <TextBlock Text="Workday started at: " Style="{StaticResource ChartSubTitleStyle}"
-                                               HorizontalAlignment="Right" />
+                                    <TextBlock Text="Workday started at: " Style="{StaticResource ChartSubTitleStyle}" />
                                     <TextBlock Grid.Row="0" Grid.Column="1"
                                                Text="{Binding WorkdayStartTime, Mode=OneWay, StringFormat={StaticResource TimeFormat}}"
                                                Style="{StaticResource ChartSubTitleStyle}" />
@@ -154,31 +154,48 @@
         </ResourceDictionary>
 
     </UserControl.Resources>
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
-        <metroChart:PieChart Grid.Row="0" Grid.Column="0" Width="Auto" Height="500"
-                             ChartTitle="Today Activities" SelectedItem="{Binding SelectedActivity, Mode=TwoWay}"
-                             ChartTitleStyle="{StaticResource DashboardChartTitleStyle}">
-            <metroChart:PieChart.Series>
-                <metroChart:ChartSeries SeriesTitle="Title" DisplayMember="Name" ValueMember="Duration"
-                                        ItemsSource="{Binding Activities, Mode=OneWay}" />
-            </metroChart:PieChart.Series>
-        </metroChart:PieChart>
+            <metroChart:PieChart Grid.Row="0" Grid.Column="0" Width="Auto" Height="500"
+                                 ChartTitle="Today's Activities" SelectedItem="{Binding SelectedActivity, Mode=TwoWay}"
+                                 ChartTitleStyle="{StaticResource DashboardChartTitleStyle}">
+                <metroChart:PieChart.Series>
+                    <metroChart:ChartSeries SeriesTitle="Title" DisplayMember="ActivityName"
+                                            ValueMember="TotalDuration"
+                                            ItemsSource="{Binding PieChartPieces, Mode=OneWay}" />
+                </metroChart:PieChart.Series>
+            </metroChart:PieChart>
 
-        <DataGrid Grid.Row="1" Grid.Column="0" ItemsSource="{Binding SelectedActivity.Records}"
-                  AutoGenerateColumns="False"
-                  Visibility="{Binding SelectedActivity.HasRecords, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding StartTime, Mode=OneWay, StringFormat=\{0:t\}}"
-                                    Header="Start Time" />
-                <DataGridTextColumn Binding="{Binding EndTime, Mode=OneWay, StringFormat=\{0:t\}}" Header="End Time" />
-                <DataGridTextColumn Binding="{Binding Duration, Mode=OneWay, StringFormat=\{0:hh\\:mm\\:ss\}}" Header="Duration" />
-                <DataGridTextColumn Binding="{Binding Activity.Name, Mode=OneWay}" Header="Activity" />
-            </DataGrid.Columns>
-        </DataGrid>
-    </Grid>
+            <metroChart:RadialGaugeChart Grid.Row="1"
+                                         ChartTitle="Activity Percents" ChartSubTitle="{x:Null}"
+                                         SelectedItem="{Binding SelectedActivity, Mode=TwoWay}">
+                <metroChart:RadialGaugeChart.Series>
+                    <metroChart:ChartSeries SeriesTitle="Title" DisplayMember="ActivityName"
+                                            ValueMember="WorkdayPercent"
+                                            ItemsSource="{Binding GaugeChartPieces, Mode=OneWay}" />
+                </metroChart:RadialGaugeChart.Series>
+            </metroChart:RadialGaugeChart>
+
+            <DataGrid Grid.Row="2" Grid.Column="0" ItemsSource="{Binding SelectedActivity.Records}"
+                      AutoGenerateColumns="False"
+                      Visibility="{Binding SelectedActivity.HasRecords, Converter={StaticResource BooleanToVisibilityConverter}}"
+                      MinHeight="300">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Binding="{Binding StartTime, Mode=OneWay, StringFormat=\{0:t\}}"
+                                        Header="Start Time" />
+                    <DataGridTextColumn Binding="{Binding EndTime, Mode=OneWay, StringFormat=\{0:t\}}"
+                                        Header="End Time" />
+                    <DataGridTextColumn Binding="{Binding Duration, Mode=OneWay, StringFormat=\{0:hh\\:mm\\:ss\}}"
+                                        Header="Duration" />
+                    <DataGridTextColumn Binding="{Binding Activity.Name, Mode=OneWay}" Header="Activity" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+    </ScrollViewer>
 </UserControl>
