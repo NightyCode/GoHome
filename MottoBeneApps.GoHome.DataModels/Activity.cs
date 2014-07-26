@@ -52,7 +52,7 @@
         public int? ParentActivityId
         {
             get;
-            private set;
+            set;
         }
 
         #endregion

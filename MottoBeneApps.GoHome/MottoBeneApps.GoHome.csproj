@@ -48,9 +48,6 @@
     <Reference Include="Gemini">
       <HintPath>..\packages\GeminiWpf.0.5.0\lib\net40\Gemini.dll</HintPath>
     </Reference>
-    <Reference Include="Hardcodet.Wpf.TaskbarNotification">
-      <HintPath>..\packages\Hardcodet.NotifyIcon.Wpf.1.0.5\lib\net45\Hardcodet.Wpf.TaskbarNotification.dll</HintPath>
-    </Reference>
     <Reference Include="NLog">
       <HintPath>..\packages\NLog.3.1.0.0\lib\net45\NLog.dll</HintPath>
     </Reference>
@@ -181,6 +178,10 @@
     <ProjectReference Include="..\MottoBeneApps.GoHome.DataModels\MottoBeneApps.GoHome.DataModels.csproj">
       <Project>{EF6B8330-C5F4-4FEC-ABC9-8E7095286745}</Project>
       <Name>MottoBeneApps.GoHome.DataModels</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MottoBeneApps.GoHome.SystemTray\MottoBeneApps.GoHome.SystemTray.csproj">
+      <Project>{813d7411-57ea-4168-b48b-e65bac964e01}</Project>
+      <Name>MottoBeneApps.GoHome.SystemTray</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

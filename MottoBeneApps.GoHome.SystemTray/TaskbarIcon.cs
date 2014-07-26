@@ -1,0 +1,245 @@
+﻿namespace MottoBeneApps.GoHome.SystemTray
+{
+    #region Namespace Imports
+
+    using System;
+    using System.Drawing;
+    using System.Windows;
+    using System.Windows.Controls.Primitives;
+
+    using Caliburn.Micro;
+
+    using Action = System.Action;
+
+    #endregion
+
+
+    public class TaskbarIcon : PropertyChangedBase
+    {
+        #region Constants and Fields
+
+        private readonly Hardcodet.Wpf.TaskbarNotification.TaskbarIcon _icon;
+        private object _popup;
+
+        #endregion
+
+
+        #region Constructors and Destructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:System.Object"/> class.
+        /// </summary>
+        public TaskbarIcon()
+        {
+            _icon = new Hardcodet.Wpf.TaskbarNotification.TaskbarIcon { Visibility = Visibility.Hidden };
+
+            _icon.TrayMouseDoubleClick += OnTrayMouseDoubleClick;
+            _icon.TrayPopupOpen += OnTrayPopupOpen;
+            _icon.PreviewTrayPopupOpen += OnPreviewTrayPopupOpen;
+        }
+
+
+        private void OnPreviewTrayPopupOpen(object sender, RoutedEventArgs e)
+        {
+        }
+
+        #endregion
+
+
+        #region Events
+
+        public event EventHandler TrayMouseDoubleClick;
+
+        #endregion
+
+
+        #region Properties
+
+        public Icon Icon
+        {
+            get
+            {
+                return Invoke(() => _icon.Icon);
+            }
+
+            set
+            {
+                Invoke(
+                    () =>
+                    {
+                        if (Equals(_icon.Icon, value))
+                        {
+                            return;
+                        }
+
+                        _icon.Icon = value;
+
+                        NotifyOfPropertyChange(() => Icon);
+                    });
+            }
+        }
+
+        public bool IsVisible
+        {
+            get
+            {
+                return Invoke(() => _icon.Visibility == Visibility.Visible);
+            }
+
+            set
+            {
+                Invoke(
+                    () =>
+                    {
+                        var visibility = value ? Visibility.Visible : Visibility.Hidden;
+
+                        if (Equals(_icon.Visibility, visibility))
+                        {
+                            return;
+                        }
+
+                        _icon.Visibility = visibility;
+
+                        NotifyOfPropertyChange(() => IsVisible);
+                    });
+            }
+        }
+
+        public object Popup
+        {
+            get
+            {
+                return _popup;
+            }
+            set
+            {
+                if (Equals(value, _popup))
+                {
+                    return;
+                }
+
+                _popup = value;
+
+                UpdateTrayPopup();
+
+                NotifyOfPropertyChange(() => Popup);
+            }
+        }
+
+
+        public PopupActivationMode PopupActivation
+        {
+            get
+            {
+                return
+                    Invoke(
+                        () =>
+                            ConvertEnum<Hardcodet.Wpf.TaskbarNotification.PopupActivationMode, PopupActivationMode>(
+                                _icon.PopupActivation));
+            }
+
+            set
+            {
+                Invoke(
+                    () =>
+                    {
+                        var popupActivationMode =
+                            ConvertEnum<PopupActivationMode, Hardcodet.Wpf.TaskbarNotification.PopupActivationMode>(
+                                value);
+
+                        if (Equals(_icon.PopupActivation, popupActivationMode))
+                        {
+                            return;
+                        }
+
+                        _icon.PopupActivation = popupActivationMode;
+
+                        NotifyOfPropertyChange(() => PopupActivation);
+                    });
+            }
+        }
+
+        #endregion
+
+
+        #region Methods
+
+        private TDestinationEnum ConvertEnum<TSourceEnum, TDestinationEnum>(TSourceEnum sourceValue)
+        {
+            return (TDestinationEnum)Enum.Parse(typeof(TDestinationEnum), sourceValue.ToString());
+        }
+
+
+        private void Invoke(Action action)
+        {
+            if (_icon.Dispatcher.CheckAccess())
+            {
+                action();
+            }
+            else
+            {
+                _icon.Dispatcher.Invoke(action);
+            }
+        }
+
+
+        private TResult Invoke<TResult>(Func<TResult> action)
+        {
+            return _icon.Dispatcher.CheckAccess() ? action() : _icon.Dispatcher.Invoke(action);
+        }
+
+
+        private void OnTrayMouseDoubleClick(object sender, RoutedEventArgs routedEventArgs)
+        {
+            if (TrayMouseDoubleClick != null)
+            {
+                TrayMouseDoubleClick(this, EventArgs.Empty);
+            }
+        }
+
+
+        private void OnTrayPopupOpen(object sender, RoutedEventArgs routedEventArgs)
+        {
+            Popup popup = _icon.TrayPopupResolved;
+
+            var popupViewModel = _popup;
+            UIElement popupView = _icon.TrayPopup;
+
+            popup.SetValue(View.IsGeneratedProperty, true);
+            ViewModelBinder.Bind(popupViewModel, popup, null);
+            Caliburn.Micro.Action.SetTargetWithoutContext(popupView, popupViewModel);
+
+            var activate = popupViewModel as IActivate;
+            if (activate != null)
+            {
+                activate.Activate();
+            }
+
+            var deactivator = popupViewModel as IDeactivate;
+            if (deactivator != null)
+            {
+                popup.Closed += (EventHandler)((param0, param1) => deactivator.Deactivate(true));
+            }
+
+            var trayPopup = popupViewModel as TrayPopup;
+
+            if (trayPopup != null)
+            {
+                trayPopup.ParentPopup = popup;
+            }
+        }
+
+
+        private void UpdateTrayPopup()
+        {
+            Invoke(
+                () =>
+                {
+                    UIElement popupView = ViewLocator.LocateForModel(_popup, null, null);
+                    _icon.TrayPopup = popupView;
+                });
+        }
+
+        #endregion
+    }
+}

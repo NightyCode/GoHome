@@ -11,5 +11,8 @@
     <Setting Name="WorkDayDuration" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">480</Value>
     </Setting>
+    <Setting Name="MaximumBreakDuration" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">60</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

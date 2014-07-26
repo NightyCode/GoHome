@@ -41,7 +41,14 @@
             }
 
             TotalDuration = (int)Math.Round(TimeSpan.FromTicks(Records.Sum(r => r.DurationTicks)).TotalMinutes);
+
             var totalWorkdayMinutes = (int)Math.Round(workdayDuration.TotalMinutes);
+
+            if (totalWorkdayMinutes == 0)
+            {
+                return;
+            }
+
             WorkdayPercent = (int)(TotalDuration / (totalWorkdayMinutes / 100d));
         }
 

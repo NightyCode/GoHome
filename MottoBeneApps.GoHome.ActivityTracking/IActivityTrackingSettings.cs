@@ -11,6 +11,11 @@
     {
         #region Properties
 
+        TimeSpan MaximumBreakDuration
+        {
+            get;
+        }
+
         TimeSpan MinimumActivityDuration
         {
             get;

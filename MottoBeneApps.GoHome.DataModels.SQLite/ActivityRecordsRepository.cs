@@ -27,8 +27,9 @@
                         entities.Activities.Single(a => a.ActivityId == activityRecord.Activity.ActivityId);
                 }
 
-                entities.ActivityRecords.Add(activityRecord);
+                var record = entities.ActivityRecords.Add(activityRecord);
                 entities.SaveChanges();
+                activityRecord.ActivityRecordId = record.ActivityRecordId;
             }
         }
 
@@ -69,7 +70,7 @@
         {
             using (var entities = new UserActivityLogEntities())
             {
-                return entities.ActivityRecords.Include(r => r.Activity).ToList();
+                return entities.ActivityRecords.Include(r => r.Activity).Select(Clone).ToList();
             }
         }
 
@@ -82,6 +83,19 @@
                     GetActivityLog(entities, DateTime.Now).Where(r => r.Activity.IsWork);
                 long duration = activityLog.Sum(r => r.DurationTicks);
                 return workDayDuration - TimeSpan.FromTicks(duration);
+            }
+        }
+
+
+        public IEnumerable<ActivityRecord> GetUnknownActivityRecords()
+        {
+            using (var entities = new UserActivityLogEntities())
+            {
+                return
+                    entities.ActivityRecords.Include(r => r.Activity)
+                        .Where(r => r.Activity == null)
+                        .Select(Clone)
+                        .ToList();
             }
         }
 
@@ -111,6 +125,37 @@
 
 
         #region Methods
+
+        private static ActivityRecord Clone(ActivityRecord record)
+        {
+            return new ActivityRecord(record.ActivityRecordId)
+            {
+                Activity = Clone(record.Activity),
+                EndTime = record.EndTime,
+                Idle = record.Idle,
+                StartTime = record.StartTime,
+                ActivityRecordId = record.ActivityRecordId
+            };
+        }
+
+
+        private static Activity Clone(Activity activity)
+        {
+            if (activity == null)
+            {
+                return null;
+            }
+
+            var clone = new Activity(activity.ActivityId)
+            {
+                IsWork = activity.IsWork,
+                Name = activity.Name,
+                ParentActivityId = activity.ParentActivityId,
+            };
+
+            return clone;
+        }
+
 
         private static IQueryable<ActivityRecord> GetActivityLog(UserActivityLogEntities entities, DateTime date)
         {

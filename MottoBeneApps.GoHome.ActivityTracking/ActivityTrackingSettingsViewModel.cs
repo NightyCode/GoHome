@@ -23,6 +23,7 @@
     {
         #region Constants and Fields
 
+        private TimeSpan _maximumBreakDuration;
         private TimeSpan _minimumActivityDuration;
         private TimeSpan _minimumIdleDuration;
         private TimeSpan _workDayDuration;
@@ -47,12 +48,33 @@
 
             eventManager.AddListener(s => s.IdleThreshold, i => MinimumIdleDuration = TimeSpan.FromMilliseconds(i));
             eventManager.AddListener(s => s.WorkDayDuration, i => WorkDayDuration = TimeSpan.FromMinutes(i));
+            eventManager.AddListener(s => s.MaximumBreakDuration, i => MaximumBreakDuration = TimeSpan.FromMinutes(i));
         }
 
         #endregion
 
 
         #region Properties
+
+        public TimeSpan MaximumBreakDuration
+        {
+            get
+            {
+                return _maximumBreakDuration;
+            }
+
+            set
+            {
+                if (value.Equals(_maximumBreakDuration))
+                {
+                    return;
+                }
+
+                _maximumBreakDuration = value;
+
+                NotifyOfPropertyChange(() => MaximumBreakDuration);
+            }
+        }
 
         public TimeSpan MinimumActivityDuration
         {
@@ -154,6 +176,7 @@
             MinimumActivityDuration = TimeSpan.FromMilliseconds(Settings.Default.ActiveThreshold);
             MinimumIdleDuration = TimeSpan.FromMilliseconds(Settings.Default.IdleThreshold);
             WorkDayDuration = TimeSpan.FromMinutes(Settings.Default.WorkDayDuration);
+            MaximumBreakDuration = TimeSpan.FromMinutes(Settings.Default.MaximumBreakDuration);
         }
 
         #endregion

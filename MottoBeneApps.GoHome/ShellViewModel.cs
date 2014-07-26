@@ -15,9 +15,8 @@
     using Gemini.Framework.Services;
     using Gemini.Modules.Shell.Views;
 
-    using Hardcodet.Wpf.TaskbarNotification;
-
     using MottoBeneApps.GoHome.Properties;
+    using MottoBeneApps.GoHome.SystemTray;
 
     #endregion
 
@@ -101,7 +100,7 @@
             Stream iconStream = IoC.Get<IResourceManager>()
                 .GetStream("Resources/GoHome.ico", Assembly.GetExecutingAssembly().GetAssemblyName());
 
-            _taskbarIcon = new TaskbarIcon { Icon = new Icon(iconStream), Visibility = Visibility.Hidden };
+            _taskbarIcon = new TaskbarIcon { Icon = new Icon(iconStream) };
 
             _taskbarIcon.TrayMouseDoubleClick += OnTaskbarIconTrayMouseDoubleClick;
 
@@ -118,7 +117,7 @@
         }
 
 
-        private void OnTaskbarIconTrayMouseDoubleClick(object sender, RoutedEventArgs routedEventArgs)
+        private void OnTaskbarIconTrayMouseDoubleClick(object sender, EventArgs eventArgs)
         {
             if (_window.IsVisible)
             {
@@ -127,7 +126,7 @@
 
             _window.Show();
             _window.WindowState = _previousWindowState;
-            _taskbarIcon.Visibility = Visibility.Hidden;
+            _taskbarIcon.IsVisible = false;
             StartHiddenToTray = false;
         }
 
@@ -138,7 +137,7 @@
 
             if (window.WindowState == WindowState.Minimized)
             {
-                _taskbarIcon.Visibility = Visibility.Visible;
+                _taskbarIcon.IsVisible = true;
                 window.Hide();
                 StartHiddenToTray = true;
             }

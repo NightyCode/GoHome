@@ -13,6 +13,8 @@
 
     using MottoBeneApps.GoHome.DataModels;
 
+    using Action = System.Action;
+
     #endregion
 
 
@@ -25,8 +27,8 @@
         private static readonly object _activityTrackingSyncRoot = new object();
 
         private readonly IActivityRecordsRepository _activityRecordsRepository;
+        private readonly Activity _breakActivity;
         private readonly Activity _defaultActivity;
-        private readonly Activity _defaultIdleActivity;
         private readonly Activity _homeActivity;
         private readonly IUserInputTracker _inputTracker;
         private readonly ILog _log = LogManager.GetLog(typeof(UserActivityTracker));
@@ -55,9 +57,17 @@
 
             List<Activity> activities = activitiesRepository.GetActivities().ToList();
             _defaultActivity = activities[0];
-            _defaultIdleActivity = activities[1];
+            _breakActivity = activities[1];
             _homeActivity = activities[5];
         }
+
+        #endregion
+
+
+        #region Events
+
+        public event EventHandler ActivityLogUpdated;
+        public event EventHandler<ActivityRecordEventArgs> UnknownActivityLogged;
 
         #endregion
 
@@ -211,7 +221,15 @@
 
                 if (lastUserInputTime == DateTime.MinValue)
                 {
-                    return;
+                    if (forceLog)
+                    {
+                        lastUserInputTime = currentTime;
+                        userInputStartTime = currentTime;
+                    }
+                    else
+                    {
+                        return;
+                    }
                 }
 
                 if (!forceLog && idleTime < _settings.MinimumIdleDuration)
@@ -226,7 +244,9 @@
                     userInputStartTime,
                     lastUserInputTime,
                     currentTime,
-                    _settings);
+                    _settings,
+                    OnActivityLogUpdated,
+                    OnUnknownActivityLogged);
             }
         }
 
@@ -238,102 +258,140 @@
             DateTime userInputStartTime,
             DateTime lastUserInputTime,
             DateTime currentTime,
-            IActivityTrackingSettings settings)
+            IActivityTrackingSettings settings,
+            Action onActivityLogUpdated,
+            Action<ActivityRecord> onUnknownActivityLogged)
         {
             var activeTime = lastUserInputTime - userInputStartTime;
             var idleTime = currentTime - lastUserInputTime;
 
-            ActivityRecord lastRecord = activityRecordsRepository.GetLastRecord();
+            bool logUpdated = false;
 
-            if (lastRecord != null)
+            Action<ActivityRecord, Action<ActivityRecord>> addOrUpdateRecord = (record, addOrUpdate) =>
             {
-                TimeSpan idleTimeAfterLastRecord = userInputStartTime - lastRecord.EndTime;
-
-                if (lastRecord.Idle)
+                if (record.Idle)
                 {
-                    // Cannot log this yet. Not enough data.
-                    if (activeTime < settings.MinimumActivityDuration && idleTime < settings.MinimumIdleDuration)
-                    {
-                        return;
-                    }
-
-                    if (activeTime < settings.MinimumActivityDuration)
-                    {
-                        lastRecord.EndTime = currentTime;
-                        setIdleRecordActivity(lastRecord);
-                        activityRecordsRepository.Update(lastRecord);
-
-                        return;
-                    }
-
-                    if (idleTimeAfterLastRecord.TotalMilliseconds > 0)
-                    {
-                        lastRecord.EndTime = userInputStartTime;
-                        setIdleRecordActivity(lastRecord);
-                        activityRecordsRepository.Update(lastRecord);
-                    }
+                    setIdleRecordActivity(record);
                 }
-                else
-                {
-                    if (idleTimeAfterLastRecord >= settings.MinimumIdleDuration)
-                    {
-                        var newIdleRecord = new ActivityRecord
-                        {
-                            StartTime = lastRecord.EndTime,
-                            EndTime = userInputStartTime,
-                            Idle = true,
-                        };
 
-                        setIdleRecordActivity(newIdleRecord);
-                        activityRecordsRepository.Add(newIdleRecord);
+                addOrUpdate(record);
+
+                if (record.Idle && record.Activity == null)
+                {
+                    onUnknownActivityLogged(record);
+                }
+
+                logUpdated = true;
+            };
+
+            Action<ActivityRecord> addRecord = record => addOrUpdateRecord(record, activityRecordsRepository.Add);
+            Action<ActivityRecord> updateRecord = record => addOrUpdateRecord(record, activityRecordsRepository.Update);
+
+            try
+            {
+                ActivityRecord lastRecord = activityRecordsRepository.GetLastRecord();
+
+                if (lastRecord != null)
+                {
+                    TimeSpan idleTimeAfterLastRecord = userInputStartTime - lastRecord.EndTime;
+
+                    if (lastRecord.Idle)
+                    {
+                        // Cannot log this yet. Not enough data.
+                        if (activeTime < settings.MinimumActivityDuration && idleTime < settings.MinimumIdleDuration)
+                        {
+                            return;
+                        }
+
+                        if (activeTime < settings.MinimumActivityDuration)
+                        {
+                            lastRecord.EndTime = currentTime;
+                            updateRecord(lastRecord);
+
+                            return;
+                        }
+
+                        if (idleTimeAfterLastRecord.TotalMilliseconds > 0)
+                        {
+                            lastRecord.EndTime = userInputStartTime;
+                            updateRecord(lastRecord);
+                        }
                     }
                     else
                     {
-                        lastRecord.EndTime = lastUserInputTime;
-                        activityRecordsRepository.Update(lastRecord);
-                        activeTime = TimeSpan.Zero;
+                        if (idleTimeAfterLastRecord >= settings.MinimumIdleDuration)
+                        {
+                            var newIdleRecord = new ActivityRecord
+                            {
+                                StartTime = lastRecord.EndTime,
+                                EndTime = userInputStartTime,
+                                Idle = true,
+                            };
+
+                            addRecord(newIdleRecord);
+                        }
+                        else
+                        {
+                            lastRecord.EndTime = lastUserInputTime;
+                            updateRecord(lastRecord);
+                            activeTime = TimeSpan.Zero;
+                        }
                     }
                 }
+
+                if (activeTime < settings.MinimumActivityDuration && idleTime < settings.MinimumIdleDuration)
+                {
+                    return;
+                }
+
+                if (activeTime >= settings.MinimumActivityDuration)
+                {
+                    addRecord(
+                        new ActivityRecord
+                        {
+                            StartTime = userInputStartTime,
+                            EndTime = lastUserInputTime,
+                            Idle = false,
+                            Activity = defaultActivity
+                        });
+                }
+                else if (activeTime != TimeSpan.Zero)
+                {
+                    idleTime += activeTime;
+                    lastUserInputTime = userInputStartTime;
+                }
+
+                if (idleTime < settings.MinimumIdleDuration)
+                {
+                    return;
+                }
+
+                var idleRecord = new ActivityRecord
+                {
+                    StartTime = lastUserInputTime,
+                    EndTime = currentTime,
+                    Idle = true,
+                    Activity = defaultActivity
+                };
+
+                addRecord(idleRecord);
             }
-
-            if (activeTime < settings.MinimumActivityDuration && idleTime < settings.MinimumIdleDuration)
+            finally
             {
-                return;
+                if (logUpdated)
+                {
+                    onActivityLogUpdated();
+                }
             }
+        }
 
-            if (activeTime >= settings.MinimumActivityDuration)
+
+        private void OnActivityLogUpdated()
+        {
+            if (ActivityLogUpdated != null)
             {
-                activityRecordsRepository.Add(
-                    new ActivityRecord
-                    {
-                        StartTime = userInputStartTime,
-                        EndTime = lastUserInputTime,
-                        Idle = false,
-                        Activity = defaultActivity
-                    });
+                ActivityLogUpdated(this, EventArgs.Empty);
             }
-            else if (activeTime != TimeSpan.Zero)
-            {
-                idleTime += activeTime;
-                lastUserInputTime = userInputStartTime;
-            }
-
-            if (idleTime < settings.MinimumIdleDuration)
-            {
-                return;
-            }
-
-            var idleRecord = new ActivityRecord
-            {
-                StartTime = lastUserInputTime,
-                EndTime = currentTime,
-                Idle = true,
-                Activity = defaultActivity
-            };
-
-            setIdleRecordActivity(idleRecord);
-
-            activityRecordsRepository.Add(idleRecord);
         }
 
 
@@ -377,6 +435,22 @@
         }
 
 
+        private void OnUnknownActivityLogged(ActivityRecord idleActivity)
+        {
+            if (!idleActivity.Idle)
+            {
+                _log.Warn("Unknown activity notification posted for non idle activity.");
+
+                return;
+            }
+
+            if (UnknownActivityLogged != null)
+            {
+                UnknownActivityLogged(this, new ActivityRecordEventArgs(idleActivity));
+            }
+        }
+
+
         private void OnUserInput(object sender, UserInputEventArgs eventArgs)
         {
             LogUserActivity(true, false, eventArgs.TimeStamp);
@@ -389,12 +463,14 @@
             {
                 activityRecord.Activity = _homeActivity;
             }
+            else if (activityRecord.Duration < _settings.MaximumBreakDuration)
+            {
+                activityRecord.Activity = _breakActivity;
+            }
             else
             {
-                activityRecord.Activity = _defaultIdleActivity;
+                activityRecord.Activity = null;
             }
-
-            // TODO request activity from user.
         }
 
         #endregion

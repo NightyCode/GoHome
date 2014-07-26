@@ -7,7 +7,11 @@
     using System.ComponentModel;
     using System.ComponentModel.Composition;
     using System.Linq;
+    using System.Threading.Tasks;
     using System.Windows;
+    using System.Windows.Threading;
+
+    using Caliburn.Micro;
 
     using Gemini.Framework;
 
@@ -25,6 +29,7 @@
         private readonly IActivityRecordsRepository _activityRecordsRepository;
         private readonly IUserActivityTracker _activityTracker;
         private readonly IActivityTrackingSettings _settings;
+        private Dispatcher _dispatcher;
         private IEnumerable<IActivityChartPiece> _gaugeChartPieces;
         private IEnumerable<IActivityChartPiece> _pieChartPieces;
 
@@ -178,7 +183,7 @@
         {
             base.OnActivate();
 
-            RefreshData();
+            UpdateUserActivityLog();
         }
 
 
@@ -201,6 +206,7 @@
             }
 
             Settings.Default.PropertyChanged -= OnSettingsPropertyChanged;
+            _activityTracker.ActivityLogUpdated -= OnActivityLogUpdated;
         }
 
 
@@ -217,11 +223,35 @@
             if (_window != null)
             {
                 _window.StateChanged += OnWindowStateChanged;
+                _dispatcher = _window.Dispatcher;
             }
 
             Settings.Default.PropertyChanged += OnSettingsPropertyChanged;
 
+            _activityTracker.UpdateUserActivityLog();
             RefreshData();
+
+            _activityTracker.ActivityLogUpdated += OnActivityLogUpdated;
+        }
+
+
+        private void OnActivityLogUpdated(object sender, EventArgs eventArgs)
+        {
+            if (_dispatcher != null)
+            {
+                _dispatcher.InvokeAsync(RefreshData);
+            }
+            else
+            {
+                try
+                {
+                    RefreshData();
+                }
+                catch (Exception e)
+                {
+                    LogManager.GetLog(GetType()).Error(e);
+                }
+            }
         }
 
 
@@ -235,17 +265,15 @@
         {
             if (_window.WindowState != WindowState.Minimized)
             {
-                RefreshData();
+                UpdateUserActivityLog();
             }
         }
 
 
         private void RefreshData()
         {
-            _activityTracker.UpdateUserActivityLog();
-
             List<ActivityRecord> records = _activityRecordsRepository.GetActivityLog(DateTime.Now).ToList();
-            var workRecords = records.Where(r => r.Activity.IsWork).ToList();
+            var workRecords = records.Where(r => r.Activity != null && r.Activity.IsWork).ToList();
 
             TimeSpan remainingTime = _settings.WorkDayDuration;
             TimeSpan extraTime = TimeSpan.Zero;
@@ -303,6 +331,12 @@
             }
 
             PieChartPieces = chartPieces;
+        }
+
+
+        private void UpdateUserActivityLog()
+        {
+            Task.Run(() => _activityTracker.UpdateUserActivityLog());
         }
 
         #endregion

@@ -55,7 +55,7 @@
         public int ActivityRecordId
         {
             get;
-            private set;
+            set;
         }
 
 

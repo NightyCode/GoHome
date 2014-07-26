@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MottoBeneApps.GoHome.Activi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MottoBeneApps.GoHome.UnitTests", "MottoBeneApps.GoHome.UnitTests\MottoBeneApps.GoHome.UnitTests.csproj", "{6AA0E7C6-16C0-4A17-87DE-83DCD3F3B30A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MottoBeneApps.GoHome.SystemTray", "MottoBeneApps.GoHome.SystemTray\MottoBeneApps.GoHome.SystemTray.csproj", "{813D7411-57EA-4168-B48B-E65BAC964E01}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,10 @@ Global
 		{6AA0E7C6-16C0-4A17-87DE-83DCD3F3B30A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6AA0E7C6-16C0-4A17-87DE-83DCD3F3B30A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6AA0E7C6-16C0-4A17-87DE-83DCD3F3B30A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{813D7411-57EA-4168-B48B-E65BAC964E01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{813D7411-57EA-4168-B48B-E65BAC964E01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{813D7411-57EA-4168-B48B-E65BAC964E01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{813D7411-57EA-4168-B48B-E65BAC964E01}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

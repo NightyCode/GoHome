@@ -9,6 +9,14 @@ namespace MottoBeneApps.GoHome.ActivityTracking
 
     public interface IUserActivityTracker
     {
+        #region Events
+
+        event EventHandler ActivityLogUpdated;
+        event EventHandler<ActivityRecordEventArgs> UnknownActivityLogged;
+
+        #endregion
+
+
         #region Properties
 
         TimeSpan ActiveTime
