@@ -24,6 +24,7 @@
         #region Constants and Fields
 
         private readonly IActivitiesRepository _activitiesRepository;
+        private readonly ObservableCollection<ActivityRecord> _activityRecords;
         private readonly IActivityRecordsRepository _activityRecordsRepository;
         private IEnumerable<Activity> _activities;
         private ActivityRecord _currentActivityRecord;
@@ -41,7 +42,7 @@
             _activitiesRepository = activitiesRepository;
             _activityRecordsRepository = activityRecordsRepository;
 
-            ActivityRecords = new ObservableCollection<ActivityRecord>();
+            _activityRecords = new ObservableCollection<ActivityRecord>();
 
             OkCommand = new RelayCommand(UpdateActivityRecord, CanUpdateActivityRecord);
         }
@@ -51,7 +52,8 @@
 
         #region Events
 
-        public event EventHandler RecordsUpdated;
+        public event EventHandler AllRecordsUpdated;
+        public event EventHandler<ActivityRecordEventArgs> RecordUpdated;
 
         #endregion
 
@@ -78,10 +80,12 @@
             }
         }
 
-        public ObservableCollection<ActivityRecord> ActivityRecords
+        public IEnumerable<ActivityRecord> ActivityRecords
         {
-            get;
-            private set;
+            get
+            {
+                return _activityRecords;
+            }
         }
 
         public ActivityRecord CurrentActivityRecord
@@ -119,6 +123,21 @@
         #endregion
 
 
+        #region Public Methods
+
+        public void AddRecord(ActivityRecord record)
+        {
+            if (_activityRecords.Any(r => r.ActivityRecordId == record.ActivityRecordId))
+            {
+                return;
+            }
+
+            _activityRecords.Add(record);
+        }
+
+        #endregion
+
+
         #region Methods
 
         /// <summary>
@@ -131,7 +150,7 @@
 
             Activities = _activitiesRepository.GetActivities().ToList();
 
-            CurrentActivityRecord = ActivityRecords.First();
+            GetNextRecord();
         }
 
 
@@ -141,24 +160,37 @@
         }
 
 
+        private void GetNextRecord()
+        {
+            CurrentActivityRecord = ActivityRecords.OrderBy(r => r.StartTime).First();
+        }
+
+
         private void UpdateActivityRecord(object obj)
         {
             CurrentActivityRecord.Activity = SelectedActivity;
             _activityRecordsRepository.Update(CurrentActivityRecord);
 
-            ActivityRecords.Remove(CurrentActivityRecord);
+            _activityRecords.Remove(CurrentActivityRecord);
 
-            if (ActivityRecords.Count > 0)
+            if (RecordUpdated != null)
             {
-                CurrentActivityRecord = ActivityRecords.First();
+                RecordUpdated(this, new ActivityRecordEventArgs(CurrentActivityRecord));
+            }
+
+            if (_activityRecords.Count > 0)
+            {
+                GetNextRecord();
             }
             else
             {
+                CurrentActivityRecord = null;
+
                 TryClose();
 
-                if (RecordsUpdated != null)
+                if (AllRecordsUpdated != null)
                 {
-                    RecordsUpdated(this, EventArgs.Empty);
+                    AllRecordsUpdated(this, EventArgs.Empty);
                 }
             }
         }

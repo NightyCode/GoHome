@@ -112,7 +112,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="ActivityTrackingSettingsViewModel.cs" />
-    <Compile Include="UnknownActivityNotification.cs" />
     <Compile Include="UnknownActivityNotificationPopupView.xaml.cs">
       <DependentUpon>UnknownActivityNotificationPopupView.xaml</DependentUpon>
     </Compile>

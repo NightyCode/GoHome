@@ -57,6 +57,8 @@
             {
                 shell.Deactivated += OnShellDeactivated;
             }
+
+            NotificationManager.CheckUnknownActivityRecords();
         }
 
         #endregion

@@ -3,7 +3,7 @@
     #region Namespace Imports
 
     using System;
-    using System.Collections.ObjectModel;
+    using System.Collections.Generic;
 
     using MottoBeneApps.GoHome.DataModels;
 
@@ -14,17 +14,25 @@
     {
         #region Events
 
-        event EventHandler RecordsUpdated;
+        event EventHandler AllRecordsUpdated;
+        event EventHandler<ActivityRecordEventArgs> RecordUpdated;
 
         #endregion
 
 
         #region Properties
 
-        ObservableCollection<ActivityRecord> ActivityRecords
+        IEnumerable<ActivityRecord> ActivityRecords
         {
             get;
         }
+
+        #endregion
+
+
+        #region Public Methods
+
+        void AddRecord(ActivityRecord record);
 
         #endregion
     }

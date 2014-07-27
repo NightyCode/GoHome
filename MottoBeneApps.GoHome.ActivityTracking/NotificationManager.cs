@@ -4,9 +4,11 @@
 
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.ComponentModel.Composition;
     using System.Drawing;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
     using System.Timers;
@@ -54,7 +56,8 @@
             _userActivityTracker = userActivityTracker;
 
             _unknownActivityNotificationViewModel = unknownActivityNotificationPopupViewModel;
-            _unknownActivityNotificationViewModel.RecordsUpdated += OnUnknownActivityRecordsUpdated;
+            _unknownActivityNotificationViewModel.AllRecordsUpdated += OnUnknownActivityAllRecordsUpdated;
+            _unknownActivityNotificationViewModel.RecordUpdated += OnUnknownActivityRecordUpdated;
 
             Stream iconStream = IoC.Get<IResourceManager>()
                 .GetStream(
@@ -65,13 +68,18 @@
             {
                 Icon = new Icon(iconStream),
                 Popup = _unknownActivityNotificationViewModel,
-                PopupActivation = PopupActivationMode.All
+                PopupActivation = PopupActivationMode.All,
+                ToolTipText = "You've been missing too long. What've you been up to?"
             };
 
             iconStream = IoC.Get<IResourceManager>()
                 .GetStream("Resources/GoHome.ico", Assembly.GetExecutingAssembly().GetAssemblyName());
 
-            _workdayEndedNotification = new TaskbarIcon { Icon = new Icon(iconStream) };
+            _workdayEndedNotification = new TaskbarIcon
+            {
+                Icon = new Icon(iconStream),
+                ToolTipText = "You can go home now!"
+            };
 
             _userActivityTracker.UnknownActivityLogged += OnUnknownActivityLogged;
 
@@ -81,9 +89,16 @@
         #endregion
 
 
+        #region Events
+
+        public event EventHandler<ActivityRecordEventArgs> UnknownActivityRecordUpdated;
+
+        #endregion
+
+
         #region Public Methods
 
-        public void CkeckMissedNotifications()
+        public void CheckUnknownActivityRecords()
         {
             Task.Run(
                 () =>
@@ -95,12 +110,12 @@
 
                     foreach (var record in unknownActivityRecords)
                     {
-                        _unknownActivityNotificationViewModel.ActivityRecords.Add(record);
+                        _unknownActivityNotificationViewModel.AddRecord(record);
                     }
 
-                    if (_unknownActivityNotificationViewModel.ActivityRecords.Count > 0)
+                    if (_unknownActivityNotificationViewModel.ActivityRecords.Any())
                     {
-                        _unknownActivityNotification.IsVisible = true;
+                        ShowUnknownActivitiesNotification();
                     }
                 });
         }
@@ -126,7 +141,17 @@
             else
             {
                 _workdayEndedNotification.IsVisible = true;
+                _workdayEndedNotification.ShowBalloonTip(
+                    "Go Home",
+                    "Your workday is over! You can go home now.",
+                    BalloonIcon.Info);
             }
+        }
+
+
+        private void OnUnknownActivityAllRecordsUpdated(object sender, EventArgs eventArgs)
+        {
+            _unknownActivityNotification.IsVisible = false;
         }
 
 
@@ -135,21 +160,34 @@
             Application.Current.Dispatcher.InvokeAsync(
                 () =>
                 {
-                    _unknownActivityNotificationViewModel.ActivityRecords.Add(e.ActivityRecord);
-                    _unknownActivityNotification.IsVisible = true;
+                    _unknownActivityNotificationViewModel.AddRecord(e.ActivityRecord);
+                    ShowUnknownActivitiesNotification();
                 });
         }
 
 
-        private void OnUnknownActivityRecordsUpdated(object sender, EventArgs eventArgs)
+        private void OnUnknownActivityRecordUpdated(object sender, ActivityRecordEventArgs e)
         {
-            _unknownActivityNotification.IsVisible = false;
+            if (UnknownActivityRecordUpdated != null)
+            {
+                UnknownActivityRecordUpdated(this, e);
+            }
         }
 
 
         private void OnWorkDayEndTimerElapsed(object sender, ElapsedEventArgs elapsedEventArgs)
         {
             CheckRemainingWorkTime();
+        }
+
+
+        private void ShowUnknownActivitiesNotification()
+        {
+            _unknownActivityNotification.IsVisible = true;
+            _unknownActivityNotification.ShowBalloonTip(
+                "You've been missing too long",
+                "What've you been up to?",
+                BalloonIcon.Info);
         }
 
         #endregion

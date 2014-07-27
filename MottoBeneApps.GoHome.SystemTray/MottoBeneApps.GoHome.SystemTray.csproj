@@ -74,6 +74,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BalloonIcon.cs" />
     <Compile Include="PopupActivationMode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TaskbarIcon.cs" />

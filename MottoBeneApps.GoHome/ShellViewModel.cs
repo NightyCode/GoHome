@@ -100,9 +100,11 @@
             Stream iconStream = IoC.Get<IResourceManager>()
                 .GetStream("Resources/GoHome.ico", Assembly.GetExecutingAssembly().GetAssemblyName());
 
-            _taskbarIcon = new TaskbarIcon { Icon = new Icon(iconStream) };
+            _taskbarIcon = new TaskbarIcon { Icon = new Icon(iconStream), ToolTipText = "Show main window" };
 
-            _taskbarIcon.TrayMouseDoubleClick += OnTaskbarIconTrayMouseDoubleClick;
+            _taskbarIcon.TrayMouseDoubleClick += OnTaskbarIconTrayMouseClick;
+            _taskbarIcon.TrayLeftMouseDown += OnTaskbarIconTrayMouseClick;
+            _taskbarIcon.TrayRightMouseDown += OnTaskbarIconTrayMouseClick;
 
             if (Settings.Default.StartHiddenToTray)
             {
@@ -117,7 +119,7 @@
         }
 
 
-        private void OnTaskbarIconTrayMouseDoubleClick(object sender, EventArgs eventArgs)
+        private void OnTaskbarIconTrayMouseClick(object sender, EventArgs eventArgs)
         {
             if (_window.IsVisible)
             {

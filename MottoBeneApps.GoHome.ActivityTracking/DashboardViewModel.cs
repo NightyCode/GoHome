@@ -28,6 +28,7 @@
 
         private readonly IActivityRecordsRepository _activityRecordsRepository;
         private readonly IUserActivityTracker _activityTracker;
+        private readonly INotificationManager _notificationManager;
         private readonly IActivityTrackingSettings _settings;
         private Dispatcher _dispatcher;
         private IEnumerable<IActivityChartPiece> _gaugeChartPieces;
@@ -47,11 +48,13 @@
         public DashboardViewModel(
             IActivityRecordsRepository activityRecordsRepository,
             IUserActivityTracker activityTracker,
-            IActivityTrackingSettings settings)
+            IActivityTrackingSettings settings,
+            INotificationManager notificationManager)
         {
             _activityRecordsRepository = activityRecordsRepository;
             _activityTracker = activityTracker;
             _settings = settings;
+            _notificationManager = notificationManager;
 
             DisplayName = "Dashboard";
         }
@@ -207,6 +210,7 @@
 
             Settings.Default.PropertyChanged -= OnSettingsPropertyChanged;
             _activityTracker.ActivityLogUpdated -= OnActivityLogUpdated;
+            _notificationManager.UnknownActivityRecordUpdated -= OnActivityLogUpdated;
         }
 
 
@@ -218,6 +222,11 @@
         {
             base.OnViewLoaded(view);
 
+            if (_window != null)
+            {
+                _window.StateChanged -= OnWindowStateChanged;
+            }
+
             _window = Window.GetWindow((DependencyObject)view);
 
             if (_window != null)
@@ -226,12 +235,17 @@
                 _dispatcher = _window.Dispatcher;
             }
 
+            Settings.Default.PropertyChanged -= OnSettingsPropertyChanged;
             Settings.Default.PropertyChanged += OnSettingsPropertyChanged;
 
             _activityTracker.UpdateUserActivityLog();
             RefreshData();
 
+            _activityTracker.ActivityLogUpdated -= OnActivityLogUpdated;
             _activityTracker.ActivityLogUpdated += OnActivityLogUpdated;
+
+            _notificationManager.UnknownActivityRecordUpdated -= OnActivityLogUpdated;
+            _notificationManager.UnknownActivityRecordUpdated += OnActivityLogUpdated;
         }
 
 

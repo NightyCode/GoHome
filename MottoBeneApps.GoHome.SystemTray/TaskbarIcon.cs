@@ -34,13 +34,14 @@
             _icon = new Hardcodet.Wpf.TaskbarNotification.TaskbarIcon { Visibility = Visibility.Hidden };
 
             _icon.TrayMouseDoubleClick += OnTrayMouseDoubleClick;
+            _icon.TrayLeftMouseDown += OnTrayLeftMouseDown;
+            _icon.TrayLeftMouseUp += OnTrayLeftMouseUp;
+            _icon.TrayMiddleMouseDown += OnTrayMiddleMouseDown;
+            _icon.TrayMiddleMouseUp += OnTrayMiddleMouseUp;
+            _icon.TrayRightMouseDown += OnTrayRightMouseDown;
+            _icon.TrayRightMouseUp += OnTrayRightMouseUp;
+
             _icon.TrayPopupOpen += OnTrayPopupOpen;
-            _icon.PreviewTrayPopupOpen += OnPreviewTrayPopupOpen;
-        }
-
-
-        private void OnPreviewTrayPopupOpen(object sender, RoutedEventArgs e)
-        {
         }
 
         #endregion
@@ -48,7 +49,13 @@
 
         #region Events
 
+        public event EventHandler TrayLeftMouseDown;
+        public event EventHandler TrayLeftMouseUp;
+        public event EventHandler TrayMiddleMouseDown;
+        public event EventHandler TrayMiddleMouseUp;
         public event EventHandler TrayMouseDoubleClick;
+        public event EventHandler TrayRightMouseDown;
+        public event EventHandler TrayRightMouseUp;
 
         #endregion
 
@@ -159,6 +166,47 @@
             }
         }
 
+        public string ToolTipText
+        {
+            get
+            {
+                return Invoke(() => _icon.ToolTipText);
+            }
+            set
+            {
+                Invoke(
+                    () =>
+                    {
+                        if (Equals(_icon.ToolTipText, value))
+                        {
+                            return;
+                        }
+
+                        _icon.ToolTipText = value;
+                        NotifyOfPropertyChange(() => ToolTipText);
+                    });
+            }
+        }
+
+        #endregion
+
+
+        #region Public Methods
+
+        public void ShowBalloonTip(string title, string mesasge, BalloonIcon icon)
+        {
+            _icon.ShowBalloonTip(
+                title,
+                mesasge,
+                ConvertEnum<BalloonIcon, Hardcodet.Wpf.TaskbarNotification.BalloonIcon>(icon));
+        }
+
+
+        public void ShowBalloonTip(string title, string mesasge, Icon icon)
+        {
+            _icon.ShowBalloonTip(title, mesasge, icon);
+        }
+
         #endregion
 
 
@@ -186,6 +234,42 @@
         private TResult Invoke<TResult>(Func<TResult> action)
         {
             return _icon.Dispatcher.CheckAccess() ? action() : _icon.Dispatcher.Invoke(action);
+        }
+
+
+        private void OnTrayLeftMouseDown(object sender, RoutedEventArgs routedEventArgs)
+        {
+            if (TrayLeftMouseDown != null)
+            {
+                TrayLeftMouseDown(this, EventArgs.Empty);
+            }
+        }
+
+
+        private void OnTrayLeftMouseUp(object sender, RoutedEventArgs routedEventArgs)
+        {
+            if (TrayLeftMouseUp != null)
+            {
+                TrayLeftMouseUp(this, EventArgs.Empty);
+            }
+        }
+
+
+        private void OnTrayMiddleMouseDown(object sender, RoutedEventArgs routedEventArgs)
+        {
+            if (TrayMiddleMouseDown != null)
+            {
+                TrayMiddleMouseDown(this, EventArgs.Empty);
+            }
+        }
+
+
+        private void OnTrayMiddleMouseUp(object sender, RoutedEventArgs routedEventArgs)
+        {
+            if (TrayMiddleMouseUp != null)
+            {
+                TrayMiddleMouseUp(this, EventArgs.Empty);
+            }
         }
 
 
@@ -226,6 +310,24 @@
             if (trayPopup != null)
             {
                 trayPopup.ParentPopup = popup;
+            }
+        }
+
+
+        private void OnTrayRightMouseDown(object sender, RoutedEventArgs routedEventArgs)
+        {
+            if (TrayRightMouseDown != null)
+            {
+                TrayRightMouseDown(this, EventArgs.Empty);
+            }
+        }
+
+
+        private void OnTrayRightMouseUp(object sender, RoutedEventArgs routedEventArgs)
+        {
+            if (TrayRightMouseUp != null)
+            {
+                TrayRightMouseUp(this, EventArgs.Empty);
             }
         }
 
