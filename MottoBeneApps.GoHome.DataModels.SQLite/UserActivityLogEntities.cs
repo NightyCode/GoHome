@@ -2,6 +2,7 @@ namespace MottoBeneApps.GoHome.DataModels.SQLite
 {
     #region Namespace Imports
 
+    using System;
     using System.Data.Entity;
 
     #endregion
@@ -14,6 +15,9 @@ namespace MottoBeneApps.GoHome.DataModels.SQLite
         public UserActivityLogEntities()
             : base("name=UserActivityLogEntities")
         {
+            AppDomain.CurrentDomain.SetData(
+                "DataDirectory",
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
         }
 
         #endregion
